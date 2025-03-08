@@ -1,0 +1,201 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Chat</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #121212; margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; min-height: 100vh; color: #e0e0e0; }
+        h2 { margin: 10px 0; }
+        #chat { height: 70vh; width: 90vw; overflow-y: auto; background: #1e1e1e; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); margin-bottom: 10px; }
+        .message { padding: 10px 15px; margin: 10px 0; border-radius: 8px; background: #333333; }
+        .correct { color: #76ff03; font-weight: bold; }
+        .player { font-weight: bold; }
+        #startBtn { margin-top: 10px; padding: 10px 15px; border: none; border-radius: 8px; background: #76ff03; color: #121212; font-weight: bold; cursor: pointer; transition: background 0.3s ease; }
+        #startBtn:hover { background: #64dd17; }
+        #nickname, #chatInput, #wordInput { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #1e1e1e; color: #e0e0e0; margin-bottom: 10px; box-sizing: border-box; }
+        #sendBtn { padding: 10px 15px; border: none; border-radius: 8px; background: #666; color: #e0e0e0; font-weight: bold; cursor: pointer; transition: background 0.3s ease; }
+        #sendBtn:hover { background: #888; }
+        button:disabled { background-color: #444; cursor: not-allowed; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            text-align: center;
+            padding: 20px;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal .message {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 80%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+    </style>
+</head>
+<body>
+
+<h2>de.teenth chat</h2>
+<div id="adminArea" style="display: none; width: 90vw;">
+    <input type="text" id="wordInput" placeholder="Enter word to start game" />
+    <button id="startBtn" onclick="startGame()">Start Game</button>
+</div>
+
+<div id="nicknameInput">
+    <input type="text" id="nickname" placeholder="Введіть нік" />
+    <button onclick="startChat()" id="startBtn">Приєднатись до гри</button>
+</div>
+
+<div id="gameArea" style="display: none;">
+    <div id="chat"></div>
+    <input type="text" id="chatInput" placeholder="Напишіть ваше повідомлення..." disabled />
+    <button id="sendBtn" onclick="sendMessage()" disabled>Надіслати повідомлення</button>
+</div>
+
+<div id="gameMessageModal" class="modal">
+    <div class="message" id="gameMessageText"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.0/dist/socket.io.min.js"></script>
+<script>
+    const socket = io('http://localhost:3000');
+    let nickname = '';
+    let isAdmin = false;
+    let gameStarted = false;
+    let gameEnded = false;
+    let gameActive = false;
+
+    socket.on('connect', function() {
+        console.log('Connected to the server');
+        socket.emit('reconnect');
+    });
+
+    function startChat() {
+        nickname = document.getElementById('nickname').value;
+        if (nickname.trim()) {
+            document.getElementById('nicknameInput').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'block';
+            socket.emit('join', nickname);
+            socket.on('checkAdmin', (isAdminUser) => {
+                isAdmin = isAdminUser;
+                if (isAdmin) {
+                    document.getElementById('adminArea').style.display = 'block';
+                }
+            });
+        }
+    }
+
+    function startGame() {
+        const word = document.getElementById('wordInput').value;
+        if (isAdmin && word.trim() !== '') {
+            socket.emit('startGame', word);
+        }
+    }
+
+    function sendMessage() {
+        if (!gameActive || gameEnded) {
+            return;
+        }
+        const message = document.getElementById('chatInput').value;
+        if (message.trim() !== '') {
+            socket.emit('chatMessage', { message, nickname });
+            document.getElementById('chatInput').value = '';
+        }
+    }
+
+    socket.on('chatMessage', function(data) {
+        const chatDiv = document.getElementById('chat');
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message');
+        if (data.correct) {
+            messageDiv.classList.add('correct');
+            messageDiv.innerHTML = `${data.nickname} відгадав: <span class="player">${data.message}</span>`;
+        } else {
+            messageDiv.innerHTML = `<span class="player">${data.nickname}:</span> ${data.message}`;
+        }
+        chatDiv.appendChild(messageDiv);
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    });
+
+    socket.on('gameStatus', function(data) {
+        gameStarted = data.gameStarted;
+        gameEnded = data.gameEnded;
+        gameActive = gameStarted && !gameEnded;
+        document.getElementById('chatInput').disabled = !gameActive;
+        document.getElementById('sendBtn').disabled = !gameActive;
+    });
+
+    function startGame() {
+        const word = document.getElementById('wordInput').value;
+        if (isAdmin && word.trim() !== '') {
+            socket.emit('startGame', word);
+        }
+    }
+
+    function showCountdownAndStartGame() {
+        let countdown = 3;
+        const modal = document.getElementById('gameMessageModal');
+        const messageText = document.getElementById('gameMessageText');
+        
+        modal.classList.add('active');
+        messageText.innerHTML = countdown;
+        
+        const interval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                messageText.innerHTML = countdown;
+            } else {
+                clearInterval(interval);
+                modal.classList.remove('active');
+                gameActive = true;
+                gameEnded = false;
+                document.getElementById('chatInput').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }, 1000);
+    }
+
+    socket.on('gameStarted', function() {
+        showCountdownAndStartGame();
+    });
+
+    socket.on('gameEnded', function(data) {
+        gameEnded = true;
+        gameActive = false;
+        document.getElementById('chatInput').disabled = true;
+        document.getElementById('sendBtn').disabled = true;
+        showGameMessage(`🎉🎉 МОЛОДЕЦЬ! 🎉🎉<br><br>🥳 ${data.winner} відгадав слово <strong>${data.word}</strong> 🥳`);
+    });
+
+    function showGameMessage(message) {
+        const modal = document.getElementById('gameMessageModal');
+        const messageText = document.getElementById('gameMessageText');
+        messageText.innerHTML = message;
+        modal.classList.add('active');
+
+        setTimeout(() => {
+            modal.classList.remove('active');
+        }, 5000);
+    }
+
+    document.getElementById('chatInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+</script>
+
+</body>
+</html>
