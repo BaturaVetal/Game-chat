@@ -9,6 +9,7 @@ let activePlayers = [];
 let gameStarted = false;
 let word = "";
 let currentGuessers = [];
+const myAdminNickname = 'adminVet'; // Вкажіть ваш нікнейм, який буде адміністратором
 
 app.use(express.static('public'));
 
@@ -23,7 +24,8 @@ io.on('connection', (socket) => {
         console.log(`${nickname} joined the game.`);
         activePlayers.push({ id: socket.id, nickname: nickname });
 
-        if (activePlayers.length === 1) {
+        // Перевірка, чи є користувач адміністратором
+        if (nickname === myAdminNickname) {
             socket.emit('checkAdmin', true);
         } else {
             socket.emit('checkAdmin', false);
