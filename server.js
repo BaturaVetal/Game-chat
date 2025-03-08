@@ -26,6 +26,7 @@ io.on('connection', (socket) => {
 
         // Перевірка, чи є користувач адміністратором
         if (nickname === myAdminNickname) {
+	    console.log('Admin joined!');
             socket.emit('checkAdmin', true);
         } else {
             socket.emit('checkAdmin', false);
