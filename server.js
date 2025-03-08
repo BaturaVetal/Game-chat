@@ -1,4 +1,4 @@
-const express = require('express');
+п»їconst express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const app = express();
@@ -9,7 +9,7 @@ let activePlayers = [];
 let gameStarted = false;
 let word = "";
 let currentGuessers = [];
-const myAdminNickname = 'adminVet'; // Вкажіть ваш нікнейм, який буде адміністратором
+const myAdminNickname = 'adminVet'; // Р’РєР°Р¶С–С‚СЊ РІР°С€ РЅС–РєРЅРµР№Рј, СЏРєРёР№ Р±СѓРґРµ Р°РґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂРѕРј
 
 app.use(express.static('public'));
 
@@ -24,7 +24,7 @@ io.on('connection', (socket) => {
         console.log(`${nickname} joined the game.`);
         activePlayers.push({ id: socket.id, nickname: nickname });
 
-        // Перевірка, чи є користувач адміністратором
+        // РџРµСЂРµРІС–СЂРєР°, С‡Рё С” РєРѕСЂРёСЃС‚СѓРІР°С‡ Р°РґРјС–РЅС–СЃС‚СЂР°С‚РѕСЂРѕРј
         if (nickname === myAdminNickname) {
             socket.emit('checkAdmin', true);
         } else {
