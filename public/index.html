@@ -19,7 +19,7 @@
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: Arial, sans-serif; /* Fallback to a system font */
             margin: 0;
             padding: 0;
             display: flex;
@@ -323,7 +323,7 @@
         <div class="modal-content" id="gameMessageText"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.0/dist/socket.io.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <script>
         const socket = io('http://localhost:8080', { transports: ['websocket'], reconnectionAttempts: 3 });
         let nickname = '';
@@ -391,7 +391,7 @@
                 socket.emit('adminLogin', { password, nickname });
             } else {
                 alert('Password not entered!');
-                joinAsGuest(); // Fallback to guest if password is cancelled
+                joinAsGuest();
             }
         }
 
@@ -402,13 +402,13 @@
                 document.getElementById('lobby').style.display = 'none';
                 document.getElementById('gameArea').style.display = 'block';
                 const adminArea = document.getElementById('adminArea');
-                adminArea.classList.add('visible'); // Show admin area only for admin
+                adminArea.classList.add('visible');
                 document.getElementById('toolbar').style.display = 'flex';
                 socket.emit('join', nickname);
                 enableDrawing();
             } else {
                 alert('Incorrect password or admin already connected!');
-                joinAsGuest(); // Fallback to guest on failed admin login
+                joinAsGuest();
             }
         });
 
@@ -423,7 +423,7 @@
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('gameArea').style.display = 'block';
             const adminArea = document.getElementById('adminArea');
-            adminArea.classList.remove('visible'); // Explicitly hide admin area for guests
+            adminArea.classList.remove('visible');
             socket.emit('join', nickname);
         }
 
@@ -636,7 +636,6 @@
             if (e.key === 'Enter') sendMessage();
         });
 
-        // Theme Toggle Functionality
         function toggleTheme() {
             document.body.classList.toggle('dark');
             const container = document.querySelector('.container');
