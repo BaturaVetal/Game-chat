@@ -1,23 +1,123 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>de.teenth chat</title>
+    <title>de.teens phone</title>
     <style>
-        body { font-family: 'Arial', sans-serif; background-color: #121212; margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; min-height: 100vh; color: #e0e0e0; }
-        h2 { margin: 10px 0; }
-        #chat { height: 70vh; width: 90vw; overflow-y: auto; background: #1e1e1e; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); margin-bottom: 10px; }
-        .message { padding: 10px 15px; margin: 10px 0; border-radius: 8px; background: #333333; }
-        .correct { color: #76ff03; font-weight: bold; }
-        .player { font-weight: bold; }
-        #startBtn { margin-top: 10px; padding: 10px 15px; border: none; border-radius: 8px; background: #76ff03; color: #121212; font-weight: bold; cursor: pointer; transition: background 0.3s ease; }
-        #startBtn:hover { background: #64dd17; }
-        #nickname, #chatInput, #wordInput { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #1e1e1e; color: #e0e0e0; margin-bottom: 10px; box-sizing: border-box; }
-        #sendBtn { padding: 10px 15px; border: none; border-radius: 8px; background: #666; color: #e0e0e0; font-weight: bold; cursor: pointer; transition: background 0.3s ease; }
-        #sendBtn:hover { background: #888; }
-        button:disabled { background-color: #444; cursor: not-allowed; }
-
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: #fff;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+            padding: 10px;
+            text-align: center;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .lobby {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .player-list {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        .player {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .player:last-child {
+            border-bottom: none;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px;
+            background: #ff6b6b;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #e65b5b;
+        }
+        .game-area {
+            display: none;
+            padding: 20px;
+        }
+        #canvas {
+            border: 1px solid #ccc;
+            background: #fff;
+            margin-bottom: 10px;
+        }
+        .toolbar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .color-picker {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #chat {
+            height: 150px;
+            width: 100%;
+            overflow-y: auto;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .message {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        #chatInput {
+            width: 70%;
+            padding: 5px;
+            margin-right: 10px;
+        }
+        #sendBtn {
+            padding: 5px 10px;
+        }
         .modal {
             display: none;
             position: fixed;
@@ -25,177 +125,482 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.5);
             justify-content: center;
             align-items: center;
-            color: white;
-            font-size: 24px;
-            text-align: center;
+        }
+        .modal-content {
+            background: #fff;
             padding: 20px;
+            border-radius: 5px;
+            text-align: center;
         }
         .modal.active {
             display: flex;
         }
-        .modal .message {
-            background-color: #333;
-            padding: 20px;
-            border-radius: 12px;
-            max-width: 80%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+        #adminArea {
+            display: none;
+            margin-top: 10px;
+        }
+        #nicknameInput {
+            display: flex;
+            gap: 10px;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">de.teens phone</div>
+        <div class="lobby" id="lobby">
+            <div class="player-list" id="playerList"></div>
+            <div id="nicknameInput">
+                <input type="text" id="nickname" placeholder="Введіть нік">
+                <button id="joinAdminBtn" onclick="promptAdminLogin()">Приєднатись як адмін</button>
+                <button id="joinGuestBtn" onclick="joinAsGuest()">Приєднатись як гість</button>
+            </div>
+        </div>
+        <div class="game-area" id="gameArea">
+            <canvas id="canvas" width="600" height="400"></canvas>
+            <div class="toolbar" id="toolbar" style="display: none;">
+                <input type="color" id="colorPicker" class="color-picker" onchange="setColor(this.value)">
+                <button onclick="setBrushSize(2)">Small</button>
+                <button onclick="setBrushSize(5)">Medium</button>
+                <button onclick="setBrushSize(10)">Large</button>
+                <button onclick="toggleEraseMode()">Erase</button>
+            </div>
+            <div id="chat"></div>
+            <input type="text" id="chatInput" placeholder="Напишіть ваше повідомлення..." disabled>
+            <button id="sendBtn" onclick="sendMessage()" disabled>Надіслати</button>
+            <div id="adminArea">
+                <input type="text" id="wordInput" placeholder="Enter word to start game">
+                <button onclick="startGame()">Start Game</button>
+            </div>
+        </div>
+    </div>
+    <div id="gameMessageModal" class="modal">
+        <div class="modal-content" id="gameMessageText"></div>
+    </div>
 
-<h2>de.teenth chat</h2>
-<div id="adminArea" style="display: none; width: 90vw;">
-    <input type="text" id="wordInput" placeholder="Enter word to start game" />
-    <button id="startBtn" onclick="startGame()">Start Game</button>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.0/dist/socket.io.min.js"></script>
+    <script>
+        const socket = io('http://localhost:8080', { transports: ['websocket'], reconnectionAttempts: 3 });
+        let nickname = '';
+        let isAdmin = false;
+        let gameStarted = false;
+        let gameEnded = false;
+        let gameActive = false;
+        let isDrawing = false;
+        let isErasing = false;
+        let currentColor = '#000000'; // Default to black as hex
+        let brushSize = 2;
+        let currentPoints = [];
+        let allStrokes = [];
+        const eraseRadius = 10;
 
-<div id="nicknameInput">
-    <input type="text" id="nickname" placeholder="Введіть нік" />
-    <button onclick="startChat()" id="startBtn">Приєднатись до гри</button>
-</div>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = brushSize;
 
-<div id="gameArea" style="display: none;">
-    <div id="chat"></div>
-    <input type="text" id="chatInput" placeholder="Напишіть ваше повідомлення..." disabled />
-    <button id="sendBtn" onclick="sendMessage()" disabled>Надіслати повідомлення</button>
-</div>
+        socket.on('connect', () => {
+            console.log('Successfully connected to the server with ID:', socket.id);
+            socket.emit('reconnect');
+        });
 
-<div id="gameMessageModal" class="modal">
-    <div class="message" id="gameMessageText"></div>
-</div>
+        socket.on('connect_error', (error) => {
+            console.error('Connection error:', error.message);
+            alert('Не вдалося підключитися до сервера. Переконайтеся, що сервер запущено на http://localhost:8080.');
+        });
 
-<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.0/dist/socket.io.min.js"></script>
-<script>
-    const socket = io('https://game-chat-production.up.railway.app');
-    let nickname = '';
-    let isAdmin = false;
-    let gameStarted = false;
-    let gameEnded = false;
-    let gameActive = false;
+        socket.on('disconnect', (reason) => {
+            console.log('Disconnected from server:', reason);
+        });
 
-    socket.on('connect', function() {
-        console.log('Connected to the server');
-        socket.emit('reconnect');
-    });
+        socket.on('clearCanvas', () => {
+            console.log('Received clearCanvas event');
+            allStrokes = [];
+            redrawCanvas();
+        });
 
-    function startChat() {
-        nickname = document.getElementById('nickname').value;
-        if (nickname.trim()) {
-            document.getElementById('nicknameInput').style.display = 'none';
-            document.getElementById('gameArea').style.display = 'block';
-            socket.emit('join', nickname);
-            socket.on('checkAdmin', (isAdminUser) => {
-                isAdmin = isAdminUser;
-                if (isAdmin) {
-                    document.getElementById('adminArea').style.display = 'block';
-                }
-            });
+        socket.on('updateStrokes', (updatedStrokes) => {
+            console.log('Received updated strokes:', updatedStrokes);
+            allStrokes = updatedStrokes;
+            redrawCanvas();
+        });
+
+        function promptAdminLogin() {
+            console.log('Join as Admin button clicked');
+            const nick = document.getElementById('nickname').value.trim();
+            if (!nick) {
+                console.log('No nickname provided');
+                alert('Будь ласка, введіть нік!');
+                return;
+            }
+            nickname = nick;
+            console.log('Nickname set:', nickname);
+            const password = prompt("Введіть пароль для адміна:");
+            if (password) {
+                console.log('Emitting adminLogin with password:', password);
+                socket.emit('adminLogin', { password, nickname });
+            } else {
+                console.log('Password prompt cancelled');
+                alert('Пароль не введено!');
+            }
         }
-    }
 
-    function startGame() {
-        const word = document.getElementById('wordInput').value;
-        if (isAdmin && word.trim() !== '') {
+        socket.on('adminLoginResponse', (data) => {
+            console.log('Received adminLoginResponse:', data);
+            if (data.success) {
+                isAdmin = true;
+                nickname = data.nickname;
+                console.log('Admin login successful, nickname:', nickname);
+                const lobby = document.getElementById('lobby');
+                const gameArea = document.getElementById('gameArea');
+                const adminArea = document.getElementById('adminArea');
+                const toolbar = document.getElementById('toolbar');
+                if (lobby && gameArea && adminArea && toolbar) {
+                    lobby.style.display = 'none';
+                    gameArea.style.display = 'block';
+                    adminArea.style.display = 'block';
+                    toolbar.style.display = 'flex';
+                } else {
+                    console.error('Failed to find lobby, gameArea, adminArea, or toolbar elements');
+                }
+                socket.emit('join', nickname);
+                enableDrawing();
+            } else {
+                console.log('Admin login failed');
+                alert('Невірний пароль або адмін уже підключений!');
+            }
+        });
+
+        function joinAsGuest() {
+            console.log('Join as Guest button clicked');
+            const nick = document.getElementById('nickname').value.trim();
+            if (!nick) {
+                console.log('No nickname provided');
+                alert('Будь ласка, введіть нік!');
+                return;
+            }
+            nickname = nick;
+            console.log('Nickname set:', nickname);
+            isAdmin = false;
+            const lobby = document.getElementById('lobby');
+            const gameArea = document.getElementById('gameArea');
+            if (lobby && gameArea) {
+                lobby.style.display = 'none';
+                gameArea.style.display = 'block';
+            } else {
+                console.error('Failed to find lobby or gameArea elements');
+            }
+            socket.emit('join', nickname);
+        }
+
+        socket.on('joinResponse', (data) => {
+            console.log('Received joinResponse:', data);
+            if (data.success) {
+                console.log('Guest join successful');
+                enableDrawing();
+            } else {
+                console.log('Guest join failed:', data.message);
+                alert(data.message);
+            }
+        });
+
+        function startGame() {
+            console.log('Start Game button clicked');
+            if (!isAdmin) {
+                console.log('Not admin, cannot start game');
+                alert('Тільки адмін може почати гру!');
+                return;
+            }
+            const word = document.getElementById('wordInput').value.trim();
+            if (word === '') {
+                console.log('No word provided');
+                alert('Введіть слово для гри!');
+                return;
+            }
+            allStrokes = [];
+            redrawCanvas();
             socket.emit('startGame', word);
         }
-    }
 
-    function sendMessage() {
-        if (!gameActive || gameEnded) {
-            return;
-        }
-        const message = document.getElementById('chatInput').value;
-        if (message.trim() !== '') {
+        function sendMessage() {
+            console.log('Send Message button clicked');
+            if (!gameActive || gameEnded) {
+                console.log('Game not active or ended');
+                alert('Гра не активна! Зачекайте, доки адмін почне гру.');
+                return;
+            }
+            const message = document.getElementById('chatInput').value.trim();
+            if (message === '') {
+                console.log('No message provided');
+                alert('Введіть повідомлення!');
+                return;
+            }
             socket.emit('chatMessage', { message, nickname });
             document.getElementById('chatInput').value = '';
         }
-    }
 
-    socket.on('chatMessage', function(data) {
-        const chatDiv = document.getElementById('chat');
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message');
-        if (data.correct) {
-            messageDiv.classList.add('correct');
-            messageDiv.innerHTML = `${data.nickname} відгадав: <span class="player">${data.message}</span>`;
-        } else {
-            messageDiv.innerHTML = `<span class="player">${data.nickname}:</span> ${data.message}`;
-        }
-        chatDiv.appendChild(messageDiv);
-        chatDiv.scrollTop = chatDiv.scrollHeight;
-    });
-
-    socket.on('gameStatus', function(data) {
-        gameStarted = data.gameStarted;
-        gameEnded = data.gameEnded;
-        gameActive = gameStarted && !gameEnded;
-        document.getElementById('chatInput').disabled = !gameActive;
-        document.getElementById('sendBtn').disabled = !gameActive;
-    });
-
-    function startGame() {
-        const word = document.getElementById('wordInput').value;
-        if (isAdmin && word.trim() !== '') {
-            socket.emit('startGame', word);
-        }
-    }
-
-    function showCountdownAndStartGame() {
-        let countdown = 3;
-        const modal = document.getElementById('gameMessageModal');
-        const messageText = document.getElementById('gameMessageText');
-        
-        modal.classList.add('active');
-        messageText.innerHTML = countdown;
-        
-        const interval = setInterval(() => {
-            countdown--;
-            if (countdown > 0) {
-                messageText.innerHTML = countdown;
+        socket.on('chatMessage', (data) => {
+            console.log('Received chat message:', data);
+            const chatDiv = document.getElementById('chat');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message';
+            if (data.correct) {
+                messageDiv.classList.add('correct');
+                messageDiv.innerHTML = `${data.nickname} відгадав: <span class="player">${data.message}</span>`;
             } else {
-                clearInterval(interval);
-                modal.classList.remove('active');
-                gameActive = true;
-                gameEnded = false;
-                document.getElementById('chatInput').disabled = false;
-                document.getElementById('sendBtn').disabled = false;
+                messageDiv.innerHTML = `<span class="player">${data.nickname}:</span> ${data.message}`;
             }
-        }, 1000);
-    }
+            chatDiv.appendChild(messageDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        });
 
-    socket.on('gameStarted', function() {
-        showCountdownAndStartGame();
-    });
+        socket.on('gameStatus', (data) => {
+            console.log('Game status update:', data);
+            gameStarted = data.gameStarted;
+            gameEnded = data.gameEnded;
+            gameActive = gameStarted && !gameEnded;
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            if (chatInput && sendBtn) {
+                chatInput.disabled = !gameActive;
+                sendBtn.disabled = !gameActive;
+            } else {
+                console.error('Failed to find chatInput or sendBtn elements');
+            }
+        });
 
-    socket.on('gameEnded', function(data) {
-        gameEnded = true;
-        gameActive = false;
-        document.getElementById('chatInput').disabled = true;
-        document.getElementById('sendBtn').disabled = true;
-        showGameMessage(`🎉🎉 МОЛОДЕЦЬ! 🎉🎉<br><br>🥳 ${data.winner} відгадав слово <strong>${data.word}</strong> 🥳`);
-    });
+        socket.on('gameStarted', () => {
+            console.log('Game started');
+            showCountdownAndStartGame();
+        });
 
-    function showGameMessage(message) {
-        const modal = document.getElementById('gameMessageModal');
-        const messageText = document.getElementById('gameMessageText');
-        messageText.innerHTML = message;
-        modal.classList.add('active');
+        socket.on('gameEnded', (data) => {
+            console.log('Game ended:', data);
+            gameEnded = true;
+            gameActive = false;
+            const chatInput = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('sendBtn');
+            if (chatInput && sendBtn) {
+                chatInput.disabled = true;
+                sendBtn.disabled = true;
+            } else {
+                console.error('Failed to find chatInput or sendBtn elements');
+            }
+            showGameMessage(`🎉🎉 МОЛОДЕЦЬ! 🎉🎉<br><br>🥳 ${data.winner} відгадав слово <strong>${data.word}</strong> 🥳`);
+        });
 
-        setTimeout(() => {
-            modal.classList.remove('active');
-        }, 5000);
-    }
-
-    document.getElementById('chatInput').addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            sendMessage();
+        function showGameMessage(message) {
+            console.log('Showing game message:', message);
+            const modal = document.getElementById('gameMessageModal');
+            const messageText = document.getElementById('gameMessageText');
+            if (modal && messageText) {
+                messageText.innerHTML = message;
+                modal.classList.add('active');
+                setTimeout(() => modal.classList.remove('active'), 5000);
+            } else {
+                console.error('Failed to find modal or messageText elements');
+            }
         }
-    });
-</script>
 
+        function showCountdownAndStartGame() {
+            console.log('Starting countdown');
+            let countdown = 3;
+            const modal = document.getElementById('gameMessageModal');
+            const messageText = document.getElementById('gameMessageText');
+            if (modal && messageText) {
+                modal.classList.add('active');
+                messageText.innerHTML = countdown;
+                const interval = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        messageText.innerHTML = countdown;
+                    } else {
+                        clearInterval(interval);
+                        modal.classList.remove('active');
+                        gameActive = true;
+                        gameEnded = false;
+                        const chatInput = document.getElementById('chatInput');
+                        const sendBtn = document.getElementById('sendBtn');
+                        if (chatInput && sendBtn) {
+                            chatInput.disabled = false;
+                            sendBtn.disabled = false;
+                        } else {
+                            console.error('Failed to find chatInput or sendBtn elements');
+                        }
+                    }
+                }, 1000);
+            } else {
+                console.error('Failed to find modal or messageText elements');
+            }
+        }
+
+        function enableDrawing() {
+            if (!isAdmin) {
+                console.log('Not admin, disabling drawing');
+                canvas.style.pointerEvents = 'none';
+                return;
+            }
+            console.log('Enabling drawing for admin');
+            canvas.addEventListener('mousedown', (e) => {
+                if (isErasing) {
+                    eraseAtPoint(e);
+                } else {
+                    isDrawing = true;
+                    currentPoints = [];
+                    const rect = canvas.getBoundingClientRect();
+                    currentPoints.push({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                }
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (isDrawing) {
+                    const rect = canvas.getBoundingClientRect();
+                    currentPoints.push({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                    redrawCanvas();
+                    socket.emit('draw', { type: 'stroke', points: [...currentPoints], color: currentColor, size: brushSize });
+                } else if (isErasing) {
+                    eraseAtPoint(e);
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                if (isDrawing && currentPoints.length > 1) {
+                    allStrokes.push({ type: 'stroke', points: [...currentPoints], color: currentColor, size: brushSize });
+                    socket.emit('updateStrokes', allStrokes);
+                }
+                isDrawing = false;
+                if (isErasing) {
+                    socket.emit('updateStrokes', allStrokes);
+                }
+                currentPoints = [];
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                isDrawing = false;
+                currentPoints = [];
+            });
+        }
+
+        function toggleEraseMode() {
+            console.log('Toggle Erase Mode button clicked');
+            if (!isAdmin) {
+                console.log('Not admin, cannot erase');
+                alert('Тільки адмін може стерти малюнок!');
+                return;
+            }
+            isErasing = !isErasing;
+            const eraseButton = document.querySelector('.toolbar button:last-child');
+            if (eraseButton) {
+                eraseButton.textContent = isErasing ? 'Stop Erasing' : 'Erase';
+            }
+            if (!isErasing) redrawCanvas();
+        }
+
+        function setColor(color) {
+            console.log('Color changed to:', color);
+            currentColor = color;
+            ctx.strokeStyle = currentColor;
+            isErasing = false;
+            const eraseButton = document.querySelector('.toolbar button:last-child');
+            if (eraseButton) {
+                eraseButton.textContent = 'Erase';
+            }
+        }
+
+        function setBrushSize(size) {
+            console.log('Set brush size button clicked:', size);
+            brushSize = size;
+            ctx.lineWidth = brushSize;
+            isErasing = false;
+            const eraseButton = document.querySelector('.toolbar button:last-child');
+            if (eraseButton) {
+                eraseButton.textContent = 'Erase';
+            }
+        }
+
+        function redrawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            allStrokes.forEach(stroke => {
+                if (stroke.type === 'stroke') {
+                    ctx.strokeStyle = stroke.color;
+                    ctx.lineWidth = stroke.size;
+                    ctx.beginPath();
+                    ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                    for (let i = 1; i < stroke.points.length; i++) {
+                        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+                    }
+                    ctx.stroke();
+                }
+            });
+            if (isDrawing && currentPoints.length > 1) {
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = brushSize;
+                ctx.beginPath();
+                ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
+                for (let i = 1; i < currentPoints.length; i++) {
+                    ctx.lineTo(currentPoints[i].x, currentPoints[i].y);
+                }
+                ctx.stroke();
+            }
+        }
+
+        function eraseAtPoint(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Check each stroke for intersection with the erase circle
+            allStrokes = allStrokes.filter(stroke => {
+                let keep = true;
+                for (let i = 0; i < stroke.points.length - 1; i++) {
+                    const p1 = stroke.points[i];
+                    const p2 = stroke.points[i + 1];
+                    const dist = distanceToSegment({ x, y }, p1, p2);
+                    if (dist < eraseRadius + stroke.size / 2) {
+                        keep = false;
+                        break;
+                    }
+                }
+                return keep;
+            });
+
+            redrawCanvas();
+            currentPoints.push({ x, y });
+        }
+
+        // Helper function to calculate the distance from a point to a line segment
+        function distanceToSegment(point, p1, p2) {
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const lenSquared = dx * dx + dy * dy;
+
+            if (lenSquared === 0) return Math.sqrt((point.x - p1.x) ** 2 + (point.y - p1.y) ** 2);
+
+            let t = ((point.x - p1.x) * dx + (point.y - p1.y) * dy) / lenSquared;
+            t = Math.max(0, Math.min(1, t));
+
+            const projection = {
+                x: p1.x + t * dx,
+                y: p1.y + t * dy,
+            };
+
+            return Math.sqrt((point.x - projection.x) ** 2 + (point.y - projection.y) ** 2);
+        }
+
+        socket.on('draw', (data) => {
+            console.log('Received drawing data:', data);
+            if (data.type === 'stroke') {
+                allStrokes.push(data);
+                redrawCanvas();
+            }
+        });
+
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
 </body>
 </html>
