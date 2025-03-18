@@ -5,119 +5,229 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>de.teens phone</title>
     <style>
+        :root {
+            --primary-red: #ff6b6b;
+            --primary-teal: #4ecdc4;
+            --bg-light: #f0f0f0;
+            --bg-dark: #2d3436;
+            --text-light: #333;
+            --text-dark: #dfe6e9;
+            --card-bg-light: #fff;
+            --card-bg-dark: #636e72;
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f0f0f0;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            background: var(--bg-light);
+            color: var(--text-light);
+            transition: var(--transition);
         }
+
+        body.dark {
+            background: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
         .container {
             width: 100%;
-            max-width: 800px;
-            background: #fff;
-            border: 2px solid #ccc;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 850px;
+            background: var(--card-bg-light);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
             overflow: hidden;
+            transition: var(--transition);
         }
+
+        .container.dark {
+            background: var(--card-bg-dark);
+        }
+
         .header {
-            background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
-            padding: 10px;
+            background: linear-gradient(90deg, var(--primary-red), var(--primary-teal));
+            padding: 15px;
             text-align: center;
             color: #fff;
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            position: relative;
         }
-        .lobby {
-            padding: 20px;
+
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .theme-toggle img {
+            width: 20px;
+            height: 20px;
+            filter: invert(1);
+        }
+
+        .lobby, .game-area {
+            padding: 25px;
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .player-list {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            transition: var(--transition);
+        }
+
+        .container.dark .player-list {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .player {
+            padding: 8px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .player:last-child {
+            border-bottom: none;
+        }
+
+        .input-group {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
-        .player-list {
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 10px;
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-        }
-        .player {
-            padding: 5px;
-            border-bottom: 1px solid #eee;
-        }
-        .player:last-child {
-            border-bottom: none;
-        }
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+
         input[type="text"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 14px;
+            padding: 12px;
+            border: 2px solid var(--primary-teal);
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: var(--transition);
         }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 5px var(--primary-red);
+        }
+
         button {
-            padding: 10px;
-            background: #ff6b6b;
+            padding: 12px 20px;
+            background: var(--primary-red);
             color: #fff;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: var(--transition);
         }
+
         button:hover {
             background: #e65b5b;
+            transform: scale(1.05);
         }
+
         .game-area {
             display: none;
-            padding: 20px;
         }
+
         #canvas {
-            border: 1px solid #ccc;
+            border: 2px solid var(--primary-teal);
             background: #fff;
-            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 15px;
+            transition: var(--transition);
         }
+
         .toolbar {
             display: flex;
-            gap: 5px;
-            margin-bottom: 10px;
+            gap: 10px;
+            margin-bottom: 15px;
             align-items: center;
         }
+
         .color-picker {
             padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            border: 2px solid var(--primary-teal);
+            border-radius: 10px;
+            height: 40px;
+            width: 40px;
+            cursor: pointer;
+            transition: var(--transition);
         }
+
+        .color-picker:hover {
+            border-color: var(--primary-red);
+        }
+
         #chat {
             height: 150px;
             width: 100%;
             overflow-y: auto;
-            background: #f9f9f9;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-bottom: 10px;
+            background: rgba(0, 0, 0, 0.05);
+            border: 2px solid var(--primary-teal);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: var(--transition);
         }
+
+        .container.dark #chat {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-teal);
+        }
+
         .message {
-            padding: 5px;
-            border-bottom: 1px solid #eee;
+            padding: 8px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
         }
+
+        .container.dark .message {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         #chatInput {
             width: 70%;
-            padding: 5px;
-            margin-right: 10px;
+            margin-right: 15px;
         }
+
         #sendBtn {
-            padding: 5px 10px;
+            padding: 10px 20px;
         }
+
         .modal {
             display: none;
             position: fixed;
@@ -125,32 +235,64 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             justify-content: center;
             align-items: center;
         }
+
         .modal-content {
-            background: #fff;
-            padding: 20px;
-            border-radius: 5px;
+            background: var(--card-bg-light);
+            padding: 30px;
+            border-radius: 15px;
             text-align: center;
+            box-shadow: var(--shadow);
+            animation: bounceIn 0.5s ease;
+            transition: var(--transition);
         }
+
+        .container.dark .modal-content {
+            background: var(--card-bg-dark);
+        }
+
         .modal.active {
             display: flex;
         }
-        #adminArea {
-            display: none;
-            margin-top: 10px;
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            60% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); }
         }
-        #nicknameInput {
+
+        #adminArea {
+            display: none; /* Hidden by default */
+            margin-top: 15px;
             display: flex;
             gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #adminArea.visible {
+            display: flex;
+            opacity: 1;
+        }
+
+        #nicknameInput {
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">de.teens phone</div>
+        <div class="header">
+            de.teens phone
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <img src="https://img.icons8.com/ios-glyphs/30/ffffff/sun.png" alt="Theme" id="themeIcon">
+            </button>
+        </div>
         <div class="lobby" id="lobby">
             <div class="player-list" id="playerList"></div>
             <div id="nicknameInput">
@@ -191,25 +333,36 @@
         let gameActive = false;
         let isDrawing = false;
         let isErasing = false;
-        let currentColor = '#000000'; // Default to black as hex
+        let currentColor = '#000000';
         let brushSize = 2;
-        let currentPoints = [];
+        let currentStroke = null;
         let allStrokes = [];
-        const eraseRadius = 10;
+        const canvasBackgroundColor = '#ffffff';
 
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        ctx.strokeStyle = currentColor;
-        ctx.lineWidth = brushSize;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        function throttle(func, limit) {
+            let inThrottle;
+            return function (...args) {
+                if (!inThrottle) {
+                    func.apply(this, args);
+                    inThrottle = true;
+                    setTimeout(() => (inThrottle = false), limit);
+                }
+            };
+        }
 
         socket.on('connect', () => {
-            console.log('Successfully connected to the server with ID:', socket.id);
+            console.log('Connected to server with ID:', socket.id);
             socket.emit('reconnect');
         });
 
         socket.on('connect_error', (error) => {
             console.error('Connection error:', error.message);
-            alert('Не вдалося підключитися до сервера. Переконайтеся, що сервер запущено на http://localhost:8080.');
+            alert('Failed to connect to server. Ensure it’s running on http://localhost:8080.');
         });
 
         socket.on('disconnect', (reason) => {
@@ -217,107 +370,79 @@
         });
 
         socket.on('clearCanvas', () => {
-            console.log('Received clearCanvas event');
             allStrokes = [];
             redrawCanvas();
         });
 
         socket.on('updateStrokes', (updatedStrokes) => {
-            console.log('Received updated strokes:', updatedStrokes);
             allStrokes = updatedStrokes;
             redrawCanvas();
         });
 
         function promptAdminLogin() {
-            console.log('Join as Admin button clicked');
             const nick = document.getElementById('nickname').value.trim();
             if (!nick) {
-                console.log('No nickname provided');
-                alert('Будь ласка, введіть нік!');
+                alert('Please enter a nickname!');
                 return;
             }
             nickname = nick;
-            console.log('Nickname set:', nickname);
-            const password = prompt("Введіть пароль для адміна:");
+            const password = prompt("Enter admin password:");
             if (password) {
-                console.log('Emitting adminLogin with password:', password);
                 socket.emit('adminLogin', { password, nickname });
             } else {
-                console.log('Password prompt cancelled');
-                alert('Пароль не введено!');
+                alert('Password not entered!');
+                joinAsGuest(); // Fallback to guest if password is cancelled
             }
         }
 
         socket.on('adminLoginResponse', (data) => {
-            console.log('Received adminLoginResponse:', data);
             if (data.success) {
                 isAdmin = true;
                 nickname = data.nickname;
-                console.log('Admin login successful, nickname:', nickname);
-                const lobby = document.getElementById('lobby');
-                const gameArea = document.getElementById('gameArea');
+                document.getElementById('lobby').style.display = 'none';
+                document.getElementById('gameArea').style.display = 'block';
                 const adminArea = document.getElementById('adminArea');
-                const toolbar = document.getElementById('toolbar');
-                if (lobby && gameArea && adminArea && toolbar) {
-                    lobby.style.display = 'none';
-                    gameArea.style.display = 'block';
-                    adminArea.style.display = 'block';
-                    toolbar.style.display = 'flex';
-                } else {
-                    console.error('Failed to find lobby, gameArea, adminArea, or toolbar elements');
-                }
+                adminArea.classList.add('visible'); // Show admin area only for admin
+                document.getElementById('toolbar').style.display = 'flex';
                 socket.emit('join', nickname);
                 enableDrawing();
             } else {
-                console.log('Admin login failed');
-                alert('Невірний пароль або адмін уже підключений!');
+                alert('Incorrect password or admin already connected!');
+                joinAsGuest(); // Fallback to guest on failed admin login
             }
         });
 
         function joinAsGuest() {
-            console.log('Join as Guest button clicked');
             const nick = document.getElementById('nickname').value.trim();
             if (!nick) {
-                console.log('No nickname provided');
-                alert('Будь ласка, введіть нік!');
+                alert('Please enter a nickname!');
                 return;
             }
             nickname = nick;
-            console.log('Nickname set:', nickname);
             isAdmin = false;
-            const lobby = document.getElementById('lobby');
-            const gameArea = document.getElementById('gameArea');
-            if (lobby && gameArea) {
-                lobby.style.display = 'none';
-                gameArea.style.display = 'block';
-            } else {
-                console.error('Failed to find lobby or gameArea elements');
-            }
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'block';
+            const adminArea = document.getElementById('adminArea');
+            adminArea.classList.remove('visible'); // Explicitly hide admin area for guests
             socket.emit('join', nickname);
         }
 
         socket.on('joinResponse', (data) => {
-            console.log('Received joinResponse:', data);
             if (data.success) {
-                console.log('Guest join successful');
                 enableDrawing();
             } else {
-                console.log('Guest join failed:', data.message);
                 alert(data.message);
             }
         });
 
         function startGame() {
-            console.log('Start Game button clicked');
             if (!isAdmin) {
-                console.log('Not admin, cannot start game');
-                alert('Тільки адмін може почати гру!');
+                alert('Only the admin can start the game!');
                 return;
             }
             const word = document.getElementById('wordInput').value.trim();
-            if (word === '') {
-                console.log('No word provided');
-                alert('Введіть слово для гри!');
+            if (!word) {
+                alert('Enter a word to start the game!');
                 return;
             }
             allStrokes = [];
@@ -326,16 +451,13 @@
         }
 
         function sendMessage() {
-            console.log('Send Message button clicked');
             if (!gameActive || gameEnded) {
-                console.log('Game not active or ended');
-                alert('Гра не активна! Зачекайте, доки адмін почне гру.');
+                alert('Game not active! Wait for the admin to start.');
                 return;
             }
             const message = document.getElementById('chatInput').value.trim();
-            if (message === '') {
-                console.log('No message provided');
-                alert('Введіть повідомлення!');
+            if (!message) {
+                alert('Enter a message!');
                 return;
             }
             socket.emit('chatMessage', { message, nickname });
@@ -343,256 +465,168 @@
         }
 
         socket.on('chatMessage', (data) => {
-            console.log('Received chat message:', data);
             const chatDiv = document.getElementById('chat');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message';
-            if (data.correct) {
-                messageDiv.classList.add('correct');
-                messageDiv.innerHTML = `${data.nickname} відгадав: <span class="player">${data.message}</span>`;
-            } else {
-                messageDiv.innerHTML = `<span class="player">${data.nickname}:</span> ${data.message}`;
-            }
+            messageDiv.innerHTML = data.correct
+                ? `${data.nickname} guessed: <strong>${data.message}</strong>`
+                : `<strong>${data.nickname}:</strong> ${data.message}`;
             chatDiv.appendChild(messageDiv);
             chatDiv.scrollTop = chatDiv.scrollHeight;
         });
 
         socket.on('gameStatus', (data) => {
-            console.log('Game status update:', data);
             gameStarted = data.gameStarted;
             gameEnded = data.gameEnded;
             gameActive = gameStarted && !gameEnded;
-            const chatInput = document.getElementById('chatInput');
-            const sendBtn = document.getElementById('sendBtn');
-            if (chatInput && sendBtn) {
-                chatInput.disabled = !gameActive;
-                sendBtn.disabled = !gameActive;
-            } else {
-                console.error('Failed to find chatInput or sendBtn elements');
-            }
+            document.getElementById('chatInput').disabled = !gameActive;
+            document.getElementById('sendBtn').disabled = !gameActive;
         });
 
         socket.on('gameStarted', () => {
-            console.log('Game started');
             showCountdownAndStartGame();
         });
 
         socket.on('gameEnded', (data) => {
-            console.log('Game ended:', data);
             gameEnded = true;
             gameActive = false;
-            const chatInput = document.getElementById('chatInput');
-            const sendBtn = document.getElementById('sendBtn');
-            if (chatInput && sendBtn) {
-                chatInput.disabled = true;
-                sendBtn.disabled = true;
-            } else {
-                console.error('Failed to find chatInput or sendBtn elements');
-            }
-            showGameMessage(`🎉🎉 МОЛОДЕЦЬ! 🎉🎉<br><br>🥳 ${data.winner} відгадав слово <strong>${data.word}</strong> 🥳`);
+            document.getElementById('chatInput').disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            showGameMessage(`🎉 ${data.winner} guessed the word <strong>${data.word}</strong>! 🎉`);
         });
 
         function showGameMessage(message) {
-            console.log('Showing game message:', message);
             const modal = document.getElementById('gameMessageModal');
             const messageText = document.getElementById('gameMessageText');
-            if (modal && messageText) {
-                messageText.innerHTML = message;
-                modal.classList.add('active');
-                setTimeout(() => modal.classList.remove('active'), 5000);
-            } else {
-                console.error('Failed to find modal or messageText elements');
-            }
+            messageText.innerHTML = message;
+            modal.classList.add('active');
+            setTimeout(() => modal.classList.remove('active'), 5000);
         }
 
         function showCountdownAndStartGame() {
-            console.log('Starting countdown');
             let countdown = 3;
             const modal = document.getElementById('gameMessageModal');
             const messageText = document.getElementById('gameMessageText');
-            if (modal && messageText) {
-                modal.classList.add('active');
-                messageText.innerHTML = countdown;
-                const interval = setInterval(() => {
-                    countdown--;
-                    if (countdown > 0) {
-                        messageText.innerHTML = countdown;
-                    } else {
-                        clearInterval(interval);
-                        modal.classList.remove('active');
-                        gameActive = true;
-                        gameEnded = false;
-                        const chatInput = document.getElementById('chatInput');
-                        const sendBtn = document.getElementById('sendBtn');
-                        if (chatInput && sendBtn) {
-                            chatInput.disabled = false;
-                            sendBtn.disabled = false;
-                        } else {
-                            console.error('Failed to find chatInput or sendBtn elements');
-                        }
-                    }
-                }, 1000);
-            } else {
-                console.error('Failed to find modal or messageText elements');
-            }
+            modal.classList.add('active');
+            messageText.innerHTML = countdown;
+            const interval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    messageText.innerHTML = countdown;
+                } else {
+                    clearInterval(interval);
+                    modal.classList.remove('active');
+                    gameActive = true;
+                    gameEnded = false;
+                    document.getElementById('chatInput').disabled = false;
+                    document.getElementById('sendBtn').disabled = false;
+                }
+            }, 1000);
         }
 
         function enableDrawing() {
             if (!isAdmin) {
-                console.log('Not admin, disabling drawing');
                 canvas.style.pointerEvents = 'none';
                 return;
             }
-            console.log('Enabling drawing for admin');
+
+            const throttledEmit = throttle((data) => socket.emit('draw', data), 50);
+
             canvas.addEventListener('mousedown', (e) => {
-                if (isErasing) {
-                    eraseAtPoint(e);
-                } else {
-                    isDrawing = true;
-                    currentPoints = [];
-                    const rect = canvas.getBoundingClientRect();
-                    currentPoints.push({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-                }
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                currentStroke = {
+                    type: 'stroke',
+                    points: [{ x, y }],
+                    color: isErasing ? canvasBackgroundColor : currentColor,
+                    size: isErasing ? brushSize * 2 : brushSize
+                };
+                redrawCanvas();
             });
 
             canvas.addEventListener('mousemove', (e) => {
-                if (isDrawing) {
-                    const rect = canvas.getBoundingClientRect();
-                    currentPoints.push({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-                    redrawCanvas();
-                    socket.emit('draw', { type: 'stroke', points: [...currentPoints], color: currentColor, size: brushSize });
-                } else if (isErasing) {
-                    eraseAtPoint(e);
-                }
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                currentStroke.points.push({ x, y });
+                redrawCanvas();
+                throttledEmit(currentStroke);
             });
 
             canvas.addEventListener('mouseup', () => {
-                if (isDrawing && currentPoints.length > 1) {
-                    allStrokes.push({ type: 'stroke', points: [...currentPoints], color: currentColor, size: brushSize });
+                if (isDrawing && currentStroke.points.length > 1) {
+                    allStrokes.push(currentStroke);
                     socket.emit('updateStrokes', allStrokes);
                 }
                 isDrawing = false;
-                if (isErasing) {
-                    socket.emit('updateStrokes', allStrokes);
-                }
-                currentPoints = [];
+                currentStroke = null;
             });
 
             canvas.addEventListener('mouseleave', () => {
                 isDrawing = false;
-                currentPoints = [];
+                currentStroke = null;
             });
         }
 
         function toggleEraseMode() {
-            console.log('Toggle Erase Mode button clicked');
             if (!isAdmin) {
-                console.log('Not admin, cannot erase');
-                alert('Тільки адмін може стерти малюнок!');
+                alert('Only the admin can erase!');
                 return;
             }
             isErasing = !isErasing;
             const eraseButton = document.querySelector('.toolbar button:last-child');
-            if (eraseButton) {
-                eraseButton.textContent = isErasing ? 'Stop Erasing' : 'Erase';
-            }
-            if (!isErasing) redrawCanvas();
+            eraseButton.textContent = isErasing ? 'Stop Erasing' : 'Erase';
         }
 
         function setColor(color) {
-            console.log('Color changed to:', color);
             currentColor = color;
-            ctx.strokeStyle = currentColor;
             isErasing = false;
             const eraseButton = document.querySelector('.toolbar button:last-child');
-            if (eraseButton) {
-                eraseButton.textContent = 'Erase';
-            }
+            eraseButton.textContent = 'Erase';
         }
 
         function setBrushSize(size) {
-            console.log('Set brush size button clicked:', size);
             brushSize = size;
-            ctx.lineWidth = brushSize;
             isErasing = false;
             const eraseButton = document.querySelector('.toolbar button:last-child');
-            if (eraseButton) {
-                eraseButton.textContent = 'Erase';
-            }
+            eraseButton.textContent = 'Erase';
         }
 
         function redrawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             allStrokes.forEach(stroke => {
-                if (stroke.type === 'stroke') {
-                    ctx.strokeStyle = stroke.color;
-                    ctx.lineWidth = stroke.size;
-                    ctx.beginPath();
+                ctx.strokeStyle = stroke.color;
+                ctx.lineWidth = stroke.size;
+                ctx.beginPath();
+                if (stroke.points.length > 1) {
                     ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-                    for (let i = 1; i < stroke.points.length; i++) {
-                        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+                    for (let i = 1; i < stroke.points.length - 1; i++) {
+                        const xc = (stroke.points[i].x + stroke.points[i + 1].x) / 2;
+                        const yc = (stroke.points[i].y + stroke.points[i + 1].y) / 2;
+                        ctx.quadraticCurveTo(stroke.points[i].x, stroke.points[i].y, xc, yc);
                     }
                     ctx.stroke();
                 }
             });
-            if (isDrawing && currentPoints.length > 1) {
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = brushSize;
+            if (isDrawing && currentStroke && currentStroke.points.length > 1) {
+                ctx.strokeStyle = currentStroke.color;
+                ctx.lineWidth = currentStroke.size;
                 ctx.beginPath();
-                ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
-                for (let i = 1; i < currentPoints.length; i++) {
-                    ctx.lineTo(currentPoints[i].x, currentPoints[i].y);
+                ctx.moveTo(currentStroke.points[0].x, currentStroke.points[0].y);
+                for (let i = 1; i < currentStroke.points.length - 1; i++) {
+                    const xc = (currentStroke.points[i].x + currentStroke.points[i + 1].x) / 2;
+                    const yc = (currentStroke.points[i].y + currentStroke.points[i + 1].y) / 2;
+                    ctx.quadraticCurveTo(currentStroke.points[i].x, currentStroke.points[i].y, xc, yc);
                 }
                 ctx.stroke();
             }
         }
 
-        function eraseAtPoint(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            // Check each stroke for intersection with the erase circle
-            allStrokes = allStrokes.filter(stroke => {
-                let keep = true;
-                for (let i = 0; i < stroke.points.length - 1; i++) {
-                    const p1 = stroke.points[i];
-                    const p2 = stroke.points[i + 1];
-                    const dist = distanceToSegment({ x, y }, p1, p2);
-                    if (dist < eraseRadius + stroke.size / 2) {
-                        keep = false;
-                        break;
-                    }
-                }
-                return keep;
-            });
-
-            redrawCanvas();
-            currentPoints.push({ x, y });
-        }
-
-        // Helper function to calculate the distance from a point to a line segment
-        function distanceToSegment(point, p1, p2) {
-            const dx = p2.x - p1.x;
-            const dy = p2.y - p1.y;
-            const lenSquared = dx * dx + dy * dy;
-
-            if (lenSquared === 0) return Math.sqrt((point.x - p1.x) ** 2 + (point.y - p1.y) ** 2);
-
-            let t = ((point.x - p1.x) * dx + (point.y - p1.y) * dy) / lenSquared;
-            t = Math.max(0, Math.min(1, t));
-
-            const projection = {
-                x: p1.x + t * dx,
-                y: p1.y + t * dy,
-            };
-
-            return Math.sqrt((point.x - projection.x) ** 2 + (point.y - projection.y) ** 2);
-        }
-
         socket.on('draw', (data) => {
-            console.log('Received drawing data:', data);
-            if (data.type === 'stroke') {
+            if (!isAdmin) {
                 allStrokes.push(data);
                 redrawCanvas();
             }
@@ -601,6 +635,17 @@
         document.getElementById('chatInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
+
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            const container = document.querySelector('.container');
+            container.classList.toggle('dark');
+            const themeIcon = document.getElementById('themeIcon');
+            themeIcon.src = document.body.classList.contains('dark')
+                ? 'https://img.icons8.com/ios-glyphs/30/ffffff/moon-symbol.png'
+                : 'https://img.icons8.com/ios-glyphs/30/ffffff/sun.png';
+        }
     </script>
 </body>
 </html>
