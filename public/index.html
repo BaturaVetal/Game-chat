@@ -325,7 +325,7 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-        const socket = io('http://localhost:8080', { transports: ['websocket'], reconnectionAttempts: 3 });
+        const socket = io('https://gartic.up.railway.app', { transports: ['websocket'], reconnectionAttempts: 3 });
         let nickname = '';
         let isAdmin = false;
         let gameStarted = false;
