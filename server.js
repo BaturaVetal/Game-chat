@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const app = express();
@@ -24,13 +24,13 @@ io.on('connection', (socket) => {
         console.log(`${nickname} joined the game.`);
         activePlayers.push({ id: socket.id, nickname: nickname });
 
-        // Перевірка, чи є користувач адміністратором
         if (nickname === myAdminNickname) {
-	    console.log('Admin joined!');
             socket.emit('checkAdmin', true);
         } else {
             socket.emit('checkAdmin', false);
         }
+        // Надсилаємо стан гри новому гравцеві
+        socket.emit('gameStatus', { gameStarted, gameEnded: !gameStarted });
     });
 
     socket.on('startGame', (newWord) => {
@@ -58,6 +58,18 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('forceEndGame', () => {
+        if (!gameStarted) return;
+
+        gameStarted = false;
+        currentGuessers = [];
+
+        io.emit('gameEnded', { winner: 'Ніхто не', word: word });
+        io.emit('gameStatus', { gameStarted: false, gameEnded: true });
+
+        console.log('Гру примусово завершено адміном');
+    });
+
     socket.on('reconnect', () => {
         socket.emit('gameStatus', { gameStarted, gameEnded: !gameStarted });
     });
@@ -71,3 +83,4 @@ io.on('connection', (socket) => {
 server.listen(3000, () => {
     console.log('Server running on port 3000');
 });
+
