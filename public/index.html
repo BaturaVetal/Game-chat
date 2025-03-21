@@ -1,201 +1,912 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>de.teenth chat</title>
-    <style>
-        body { font-family: 'Arial', sans-serif; background-color: #121212; margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; min-height: 100vh; color: #e0e0e0; }
-        h2 { margin: 10px 0; }
-        #chat { height: 70vh; width: 90vw; overflow-y: auto; background: #1e1e1e; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); margin-bottom: 10px; }
-        .message { padding: 10px 15px; margin: 10px 0; border-radius: 8px; background: #333333; }
-        .correct { color: #76ff03; font-weight: bold; }
-        .player { font-weight: bold; }
-        #startBtn { margin-top: 10px; padding: 10px 15px; border: none; border-radius: 8px; background: #76ff03; color: #121212; font-weight: bold; cursor: pointer; transition: background 0.3s ease; }
-        #startBtn:hover { background: #64dd17; }
-        #nickname, #chatInput, #wordInput { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #1e1e1e; color: #e0e0e0; margin-bottom: 10px; box-sizing: border-box; }
-        #sendBtn { padding: 10px 15px; border: none; border-radius: 8px; background: #666; color: #e0e0e0; font-weight: bold; cursor: pointer; transition: background 0.3s ease; }
-        #sendBtn:hover { background: #888; }
-        button:disabled { background-color: #444; cursor: not-allowed; }
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>de.teens chat</title>
+        <style>
+            :root {
+                --background: #121212;
+                --text: #e0e0e0;
+                --chat-bg: #1e1e1e;
+                --message-bg: #333333;
+                --button-bg: #76ff03;
+                --tool-bg: #2c2c2c;
+                --tool-active: #ff9800;
+            }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 24px;
-            text-align: center;
-            padding: 20px;
-        }
-        .modal.active {
-            display: flex;
-        }
-        .modal .message {
-            background-color: #333;
-            padding: 20px;
-            border-radius: 12px;
-            max-width: 80%;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-        }
-    </style>
-</head>
-<body>
+            body.day-mode {
+                --background: #ffffff;
+                --text: #333333;
+                --chat-bg: #f5f5f5;
+                --message-bg: #e0e0e0;
+                --button-bg: #4caf50;
+                --tool-bg: #e0e0e0;
+                --tool-active: #fb8c00;
+            }
 
-<h2>de.teenth chat</h2>
-<div id="adminArea" style="display: none; width: 90vw;">
-    <input type="text" id="wordInput" placeholder="Enter word to start game" />
-    <button id="startBtn" onclick="startGame()">Start Game</button>
-</div>
+            body { 
+                font-family: 'Arial', sans-serif; 
+                background-color: var(--background);
+                margin: 0; 
+                padding: 0; 
+                height: 100vh; 
+                overflow: hidden; 
+                color: var(--text);
+                display: flex; 
+                flex-direction: column; 
+                transition: background-color 0.3s ease;
+            }
 
-<div id="nicknameInput">
-    <input type="text" id="nickname" placeholder="Введіть нік" />
-    <button onclick="startChat()" id="startBtn">Приєднатись до гри</button>
-</div>
+            h2 { 
+                margin: 0; 
+                padding: 10px; 
+                background: var(--chat-bg);
+                text-align: center; 
+                width: 100%; 
+                position: absolute; 
+                top: 0; 
+                z-index: 20; 
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            }
 
-<div id="gameArea" style="display: none;">
-    <div id="chat"></div>
-    <input type="text" id="chatInput" placeholder="Напишіть ваше повідомлення..." disabled />
-    <button id="sendBtn" onclick="sendMessage()" disabled>Надіслати повідомлення</button>
-</div>
+            #chat { 
+                height: 70vh; 
+                width: 90vw; 
+                overflow-y: auto; 
+                background: var(--chat-bg);
+                border-radius: 12px; 
+                padding: 20px; 
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                margin-bottom: 10px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
 
-<div id="gameMessageModal" class="modal">
-    <div class="message" id="gameMessageText"></div>
-</div>
+            .message { 
+                padding: 10px 15px; 
+                margin: 10px 0; 
+                border-radius: 8px; 
+                background: var(--message-bg);
+                transform: scale(0.9);
+                transition: transform 0.2s ease;
+                animation: slideIn 0.3s ease;
+            }
 
-<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.0/dist/socket.io.min.js"></script>
-<script>
-    const socket = io('https://game-chat-production.up.railway.app');
-    let nickname = '';
-    let isAdmin = false;
-    let gameStarted = false;
-    let gameEnded = false;
-    let gameActive = false;
+            .message:hover {
+                transform: scale(1);
+            }
 
-    socket.on('connect', function() {
-        console.log('Connected to the server');
-        socket.emit('reconnect');
-    });
+            @keyframes slideIn {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
 
-    function startChat() {
-        nickname = document.getElementById('nickname').value;
-        if (nickname.trim()) {
-            document.getElementById('nicknameInput').style.display = 'none';
-            document.getElementById('gameArea').style.display = 'block';
-            socket.emit('join', nickname);
-            socket.on('checkAdmin', (isAdminUser) => {
-                isAdmin = isAdminUser;
-                if (isAdmin) {
-                    document.getElementById('adminArea').style.display = 'block';
+            .correct { 
+                color: #76ff03; 
+                font-weight: bold; 
+            }
+
+            .player { 
+                font-weight: bold; 
+            }
+
+            #startBtn { 
+                padding: 10px 15px; 
+                border: none; 
+                border-radius: 8px; 
+                background: linear-gradient(45deg, var(--button-bg), #64dd17);
+                color: #121212; 
+                font-weight: bold; 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            }
+
+            #startBtn:hover:not(:disabled) { 
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+
+            #nickname, #chatInput, #wordInput { 
+                width: 100%; 
+                padding: 10px; 
+                border-radius: 8px; 
+                border: 1px solid #444; 
+                background: var(--chat-bg);
+                color: var(--text);
+                margin-bottom: 10px; 
+                box-sizing: border-box;
+                transition: border-color 0.3s ease;
+            }
+
+            #nickname:focus, #chatInput:focus, #wordInput:focus {
+                border-color: var(--button-bg);
+                outline: none;
+            }
+
+            #sendBtn { 
+                padding: 10px 15px; 
+                border: none; 
+                border-radius: 8px; 
+                background: linear-gradient(45deg, #666, #888);
+                color: var(--text);
+                font-weight: bold; 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            }
+
+            #sendBtn:hover:not(:disabled) { 
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            }
+
+            button:disabled { 
+                background: #444; 
+                cursor: not-allowed; 
+            }
+
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                top: 0; 
+                left: 0; 
+                width: 100%; 
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.8);
+                justify-content: center;
+                align-items: center;
+                color: white;
+                font-size: 24px;
+                text-align: center;
+                padding: 20px;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+
+            .modal.active { 
+                display: flex; 
+                opacity: 1; 
+            }
+
+            .modal .message {
+                background-color: var(--message-bg);
+                padding: 20px;
+                border-radius: 12px;
+                max-width: 80%;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+            }
+
+            .countdown {
+                font-size: 48px;
+                font-weight: bold;
+                animation: pulse 1s infinite;
+            }
+
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+
+            #adminArea {
+                width: 100vw;
+                height: calc(100vh - 40px); 
+                display: flex;
+                flex-direction: row;
+                margin-top: 40px; 
+            }
+
+            #chatPanel {
+                width: 25%; 
+                height: 100%; 
+                display: flex;
+                flex-direction: column;
+                background: var(--chat-bg);
+                border-right: 2px solid #333;
+                border-radius: 12px 0 0 12px;
+            }
+
+            #adminArea #chat { 
+                flex: 1;
+                height: auto; 
+                overflow-y: auto;
+                padding: 15px;
+                background: var(--chat-bg);
+                border-radius: 12px 12px 0 0;
+                box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+            }
+
+            #canvasPanel {
+                width: 75%;
+                height: 100%;
+                position: relative;
+                background-color: var(--background);
+                display: flex;
+                flex-direction: row;
+            }
+
+            #drawCanvas {
+                background-color: #ffffff;
+            }
+
+            #nicknameInput {
+                margin-top: 60px; 
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+                width: 300px; 
+                position: absolute; 
+                left: 50%;
+                transform: translateX(-50%); 
+            }
+
+            #gameArea {
+                display: none; 
+                width: 100vw;
+                height: calc(100vh - 40px);
+                margin-top: 40px;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #gameArea #chatInput, #gameArea #sendBtn {
+                width: 90vw; 
+            }
+
+            /* Оновлена панель інструментів */
+            .tools-container {
+                width: 250px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 15px;
+                background: var(--tool-bg);
+                border-left: 2px solid #333;
+                border-radius: 0 12px 12px 0;
+                box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+            }
+
+            .tool-item {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 12px;
+                border-radius: 25px;
+                background: linear-gradient(45deg, #444, #555);
+                color: var(--text);
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            .tool-item:hover {
+                background: linear-gradient(45deg, #555, #666);
+                transform: translateX(5px);
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            }
+
+            .tool-item.active {
+                background: linear-gradient(45deg, var(--tool-active), #f57c00);
+                transform: scale(1.05);
+            }
+
+            .tool-item i {
+                font-size: 18px;
+                transition: transform 0.3s ease;
+            }
+
+            .tool-item:hover i {
+                transform: rotate(10deg);
+            }
+
+            .tool-item span {
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            #lineWidthSlider, #colorPicker {
+                width: 100%;
+                background: none;
+                border: none;
+            }
+
+            #colorPicker {
+                height: 35px;
+                padding: 0;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            #startGameControls {
+                margin-top: 15px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+        </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    </head>
+    <body>
+        <h2>de.teens chat</h2>
+    
+        <div id="adminArea" style="display: none;">
+            <div id="chatPanel">
+                <div id="chat"></div>
+                <input type="text" id="chatInput" placeholder="Напишіть ваше повідомлення..." disabled />
+                <button id="sendBtn" onclick="sendMessage()" disabled>Надіслати</button>
+            </div>
+    
+            <div id="canvasPanel">
+                <button id="endGameBtn" onclick="endGame()" style="
+                    display: none;
+                    position: absolute;
+                    top: 20px;
+                    right: 20px;
+                    padding: 10px 15px;
+                    border: none;
+                    border-radius: 8px;
+                    background: linear-gradient(45deg, #ff5252, #f44336);
+                    color: #fff;
+                    font-weight: bold;
+                    cursor: pointer;
+                    z-index: 10;
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                ">Завершити гру</button>
+    
+                <div style="flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; position: relative;">
+                    <canvas id="drawCanvas" width="800" height="600" style="background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); cursor: crosshair; position: absolute; top: 20px; left: 20px;"></canvas>
+                    <canvas id="tempCanvas" width="800" height="600" style="position: absolute; top: 20px; left: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); cursor: crosshair; pointer-events: none;"></canvas>
+                </div>
+    
+                <div class="tools-container">
+                    <div class="tool-item" id="lineWidthTool" style="margin-top: 50px;">
+                        <i class="fas fa-pencil-alt"></i>
+                        <input id="lineWidthSlider" type="range" min="1" max="50" value="4" />
+                    </div>
+    
+                    <div class="tool-item" id="colorTool">
+                        <i class="fas fa-palette"></i>
+                        <input id="colorPicker" type="color" value="#121212" />
+                    </div>
+    
+                    <div class="tool-item" id="eraserBtn">
+                        <i class="fas fa-eraser"></i>
+                        <span>Ластик</span>
+                    </div>
+    
+                    <div class="tool-item" id="fillBtn">
+                        <i class="fas fa-fill-drip"></i>
+                        <span>Заливка</span>
+                    </div>
+    
+                    <div class="tool-item" id="clearCanvasBtn">
+                        <i class="fas fa-trash"></i>
+                        <span>Очистити</span>
+                    </div>
+    
+                    <div class="tool-item" id="circleBtn">
+                        <i class="fas fa-circle"></i>
+                        <span>Коло</span>
+                    </div>
+    
+                    <div class="tool-item" id="squareBtn">
+                        <i class="fas fa-square"></i>
+                        <span>Квадрат</span>
+                    </div>
+    
+                    <div class="tool-item" id="triangleBtn">
+                        <i class="fas fa-play" style="transform: rotate(90deg);"></i>
+                        <span>Трикутник</span>
+                    </div>
+    
+                    <div class="tool-item" id="rectangleBtn">
+                        <i class="fas fa-rectangle-landscape"></i>
+                        <span>Прямокутник</span>
+                    </div>
+    
+                    <div class="tool-item" id="ellipseBtn">
+                        <i class="fas fa-circle-notch"></i>
+                        <span>Овал</span>
+                    </div>
+    
+                    <div id="startGameControls">
+                        <input type="text" id="wordInput" placeholder="Введіть слово для гри" />
+                        <button id="startBtn" onclick="startGame()">Почати гру</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <div id="nicknameInput">
+            <input type="text" id="nickname" placeholder="Введіть нік" />
+            <button onclick="startChat()" id="startBtn">Приєднатись до гри</button>
+        </div>
+    
+        <div id="gameArea">
+            <div id="chat"></div>
+            <input type="text" id="chatInput" placeholder="Напишіть ваше повідомлення..." disabled />
+            <button id="sendBtn" onclick="sendMessage()" disabled>Надіслати повідомлення</button>
+        </div>
+    
+        <div id="gameMessageModal" class="modal">
+            <div class="message" id="gameMessageText"></div>
+        </div>
+    
+        <div id="adminPasswordModal" class="modal">
+            <div class="message" style="display: flex; flex-direction: column; gap: 15px;">
+                <h3>Введіть пароль для входу адміна</h3>
+                <input type="password" id="adminPasswordInput" placeholder="Пароль..." style="padding: 10px; border-radius: 8px; border: 1px solid #444; background: var(--chat-bg); color: var(--text);">
+                <button id="confirmPasswordBtn" style="padding: 10px; border-radius: 8px; background: linear-gradient(45deg, var(--button-bg), #64dd17); color: #121212; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);">Увійти</button>
+                <div id="passwordError" style="color: #ff5252; display: none;">Невірний пароль!</div>
+            </div>
+        </div>
+
+        <div id="themeToggle" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
+            <button id="toggleThemeBtn" style="padding: 10px; border-radius: 50%; background: linear-gradient(45deg, #666, #888); color: #fff; border: none; cursor: pointer; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.0/dist/socket.io.min.js"></script>
+        <script>
+            const canvas = document.getElementById('drawCanvas');
+            const ctx = canvas.getContext('2d');
+            const tempCanvas = document.getElementById('tempCanvas');
+            const tempCtx = tempCanvas.getContext('2d');
+    
+            let drawing = false;
+            let erasing = false;
+            let filling = false;
+            let currentShape = null;
+            let startX, startY;
+    
+            let currentColor = '#121212';
+            let lineWidth = 4;
+            const canvasBackgroundColor = '#ffffff';
+    
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.fillStyle = canvasBackgroundColor;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+            tempCtx.lineWidth = lineWidth;
+            tempCtx.lineCap = 'round';
+            tempCtx.lineJoin = 'round';
+    
+            const lineWidthSlider = document.getElementById('lineWidthSlider');
+            const colorPicker = document.getElementById('colorPicker');
+            const eraserBtn = document.getElementById('eraserBtn');
+            const fillBtn = document.getElementById('fillBtn');
+            const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+            const circleBtn = document.getElementById('circleBtn');
+            const squareBtn = document.getElementById('squareBtn');
+            const triangleBtn = document.getElementById('triangleBtn');
+            const rectangleBtn = document.getElementById('rectangleBtn');
+            const ellipseBtn = document.getElementById('ellipseBtn');
+    
+            const shapeButtons = [circleBtn, squareBtn, triangleBtn, rectangleBtn, ellipseBtn];
+    
+            lineWidthSlider.addEventListener('input', () => {
+                lineWidth = parseInt(lineWidthSlider.value);
+                ctx.lineWidth = lineWidth;
+                tempCtx.lineWidth = lineWidth;
+            });
+    
+            colorPicker.addEventListener('input', () => {
+                currentColor = colorPicker.value;
+                if (!erasing) {
+                    ctx.strokeStyle = currentColor;
+                    tempCtx.strokeStyle = currentColor;
                 }
             });
-        }
-    }
-
-    function startGame() {
-        const word = document.getElementById('wordInput').value;
-        if (isAdmin && word.trim() !== '') {
-            socket.emit('startGame', word);
-        }
-    }
-
-    function sendMessage() {
-        if (!gameActive || gameEnded) {
-            return;
-        }
-        const message = document.getElementById('chatInput').value;
-        if (message.trim() !== '') {
-            socket.emit('chatMessage', { message, nickname });
-            document.getElementById('chatInput').value = '';
-        }
-    }
-
-    socket.on('chatMessage', function(data) {
-        const chatDiv = document.getElementById('chat');
-        const messageDiv = document.createElement('div');
-        messageDiv.classList.add('message');
-        if (data.correct) {
-            messageDiv.classList.add('correct');
-            messageDiv.innerHTML = `${data.nickname} відгадав: <span class="player">${data.message}</span>`;
-        } else {
-            messageDiv.innerHTML = `<span class="player">${data.nickname}:</span> ${data.message}`;
-        }
-        chatDiv.appendChild(messageDiv);
-        chatDiv.scrollTop = chatDiv.scrollHeight;
-    });
-
-    socket.on('gameStatus', function(data) {
-        gameStarted = data.gameStarted;
-        gameEnded = data.gameEnded;
-        gameActive = gameStarted && !gameEnded;
-        document.getElementById('chatInput').disabled = !gameActive;
-        document.getElementById('sendBtn').disabled = !gameActive;
-    });
-
-    function startGame() {
-        const word = document.getElementById('wordInput').value;
-        if (isAdmin && word.trim() !== '') {
-            socket.emit('startGame', word);
-        }
-    }
-
-    function showCountdownAndStartGame() {
-        let countdown = 3;
-        const modal = document.getElementById('gameMessageModal');
-        const messageText = document.getElementById('gameMessageText');
-        
-        modal.classList.add('active');
-        messageText.innerHTML = countdown;
-        
-        const interval = setInterval(() => {
-            countdown--;
-            if (countdown > 0) {
-                messageText.innerHTML = countdown;
-            } else {
-                clearInterval(interval);
-                modal.classList.remove('active');
-                gameActive = true;
-                gameEnded = false;
-                document.getElementById('chatInput').disabled = false;
-                document.getElementById('sendBtn').disabled = false;
+    
+            eraserBtn.addEventListener('click', () => {
+                erasing = !erasing;
+                currentShape = null;
+                clearShapeSelection();
+                if (erasing) {
+                    ctx.strokeStyle = canvasBackgroundColor;
+                    tempCtx.strokeStyle = canvasBackgroundColor;
+                    eraserBtn.classList.add('active');
+                } else {
+                    ctx.strokeStyle = currentColor;
+                    tempCtx.strokeStyle = currentColor;
+                    eraserBtn.classList.remove('active');
+                }
+            });
+    
+            fillBtn.addEventListener('click', () => {
+                filling = !filling;
+                currentShape = null;
+                clearShapeSelection();
+                fillBtn.classList.toggle('active', filling);
+            });
+    
+            clearCanvasBtn.addEventListener('click', () => {
+                ctx.fillStyle = canvasBackgroundColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            });
+    
+            circleBtn.addEventListener('click', () => selectShape('circle'));
+            squareBtn.addEventListener('click', () => selectShape('square'));
+            triangleBtn.addEventListener('click', () => selectShape('triangle'));
+            rectangleBtn.addEventListener('click', () => selectShape('rectangle'));
+            ellipseBtn.addEventListener('click', () => selectShape('ellipse'));
+    
+            function selectShape(shape) {
+                currentShape = shape;
+                erasing = false;
+                filling = false;
+                eraserBtn.classList.remove('active');
+                fillBtn.classList.remove('active');
+                ctx.strokeStyle = currentColor;
+                tempCtx.strokeStyle = currentColor;
+                clearShapeSelection();
+                document.getElementById(`${shape}Btn`).classList.add('active');
             }
-        }, 1000);
-    }
+    
+            function clearShapeSelection() {
+                shapeButtons.forEach(btn => btn.classList.remove('active'));
+            }
+    
+            canvas.addEventListener('mousedown', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const offsetX = e.clientX - rect.left;
+                const offsetY = e.clientY - rect.top;
+                startX = offsetX;
+                startY = offsetY;
+    
+                if (filling) {
+                    floodFill(startX, startY, hexToRgb(currentColor));
+                    filling = false;
+                    fillBtn.classList.remove('active');
+                    return;
+                }
+    
+                drawing = true;
+                if (!currentShape) {
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                }
+            });
+    
+            canvas.addEventListener('mousemove', (e) => {
+                if (!drawing) return;
+    
+                const rect = canvas.getBoundingClientRect();
+                const offsetX = e.clientX - rect.left;
+                const offsetY = e.clientY - rect.top;
+    
+                if (currentShape) {
+                    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    drawShape(tempCtx, startX, startY, offsetX, offsetY);
+                } else {
+                    ctx.lineWidth = lineWidth;
+                    ctx.lineTo(offsetX, offsetY);
+                    ctx.stroke();
+                }
+            });
+    
+            canvas.addEventListener('mouseup', (e) => {
+                drawing = false;
+                const rect = canvas.getBoundingClientRect();
+                const offsetX = e.clientX - rect.left;
+                const offsetY = e.clientY - rect.top;
+    
+                if (currentShape) {
+                    drawShape(ctx, startX, startY, offsetX, offsetY);
+                    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    currentShape = null;
+                    clearShapeSelection();
+                } else {
+                    ctx.closePath();
+                }
+            });
+    
+            canvas.addEventListener('mouseout', () => {
+                drawing = false;
+                if (currentShape) {
+                    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                } else {
+                    ctx.closePath();
+                }
+            });
+    
+            function drawShape(context, x1, y1, x2, y2) {
+                context.strokeStyle = currentColor;
+                context.lineWidth = lineWidth;
+                context.beginPath();
+    
+                switch (currentShape) {
+                    case 'circle':
+                        const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                        context.arc(x1, y1, radius, 0, 2 * Math.PI);
+                        break;
+                    case 'square':
+                        const side = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+                        context.rect(x1, y1, side, side);
+                        break;
+                    case 'triangle':
+                        context.moveTo(x1, y1);
+                        context.lineTo(x2, y2);
+                        context.lineTo(x1 - (x2 - x1), y2);
+                        context.closePath();
+                        break;
+                    case 'rectangle':
+                        context.rect(x1, y1, x2 - x1, y2 - y1);
+                        break;
+                    case 'ellipse':
+                        const rx = Math.abs(x2 - x1) / 2;
+                        const ry = Math.abs(y2 - y1) / 2;
+                        context.ellipse((x1 + x2) / 2, (y1 + y2) / 2, rx, ry, 0, 0, 2 * Math.PI);
+                        break;
+                }
+    
+                context.stroke();
+            }
+    
+            function floodFill(startX, startY, fillColor) {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const pixels = imageData.data;
+                const width = canvas.width;
+    
+                const stack = [[Math.floor(startX), Math.floor(startY)]];
+                const targetOffset = (Math.floor(startY) * width + Math.floor(startX)) * 4;
+    
+                const targetColor = [
+                    pixels[targetOffset],
+                    pixels[targetOffset + 1],
+                    pixels[targetOffset + 2],
+                    pixels[targetOffset + 3]
+                ];
+    
+                if (colorsMatch(targetColor, [fillColor.r, fillColor.g, fillColor.b, 255])) return;
+    
+                const offset = (y, x) => (y * width + x) * 4;
+    
+                while (stack.length) {
+                    const [x, y] = stack.pop();
+                    const currentOffset = offset(y, x);
+    
+                    const currentColor = [
+                        pixels[currentOffset],
+                        pixels[currentOffset + 1],
+                        pixels[currentOffset + 2],
+                        pixels[currentOffset + 3]
+                    ];
+    
+                    if (!colorsMatch(currentColor, targetColor)) continue;
+    
+                    pixels[currentOffset] = fillColor.r;
+                    pixels[currentOffset + 1] = fillColor.g;
+                    pixels[currentOffset + 2] = fillColor.b;
+                    pixels[currentOffset + 3] = 255;
+    
+                    if (x > 0) stack.push([x - 1, y]);
+                    if (x < width - 1) stack.push([x + 1, y]);
+                    if (y > 0) stack.push([x, y - 1]);
+                    if (y < canvas.height - 1) stack.push([x, y + 1]);
+                }
+    
+                ctx.putImageData(imageData, 0, 0);
+            }
+    
+            function colorsMatch(color1, color2) {
+                return color1[0] === color2[0] && color1[1] === color2[1] && color1[2] === color2[2];
+            }
+    
+            function hexToRgb(hex) {
+                const bigint = parseInt(hex.slice(1), 16);
+                return {
+                    r: (bigint >> 16) & 255,
+                    g: (bigint >> 8) & 255,
+                    b: bigint & 255
+                };
+            }
+    
+            const socket = io('https://game-chat-production.up.railway.app');
+            let nickname = '';
+            let isAdmin = false;
+            let gameStarted = false;
+            let gameEnded = false;
+            let gameActive = false;
+    
+            socket.on('connect', function() {
+                console.log('Connected to the server');
+                socket.emit('reconnect');
+            });
+    
+            function startChat() {
+                nickname = document.getElementById('nickname').value.trim();
+                if (!nickname) return;
+    
+                if (nickname === 'adminVet') {
+                    document.getElementById('adminPasswordModal').classList.add('active');
+                    document.getElementById('adminPasswordInput').value = '';
+                    document.getElementById('passwordError').style.display = 'none';
+                    document.getElementById('confirmPasswordBtn').onclick = checkAdminPassword;
+                    return;
+                }
+    
+                enterGame();
+            }
+    
+            function checkAdminPassword() {
+                const enteredPassword = document.getElementById('adminPasswordInput').value;
+                const correctPassword = '1234';
+    
+                if (enteredPassword === correctPassword) {
+                    document.getElementById('adminPasswordModal').classList.remove('active');
+                    enterGame();
+                } else {
+                    document.getElementById('passwordError').style.display = 'block';
+                }
+            }
+    
+            function enterGame() {
+                document.getElementById('nicknameInput').style.display = 'none';
+                document.getElementById('gameArea').style.display = 'flex';
+    
+                socket.emit('join', nickname);
+    
+                socket.on('checkAdmin', (isAdminUser) => {
+                    isAdmin = isAdminUser;
+                    if (isAdmin) {
+                        document.getElementById('adminArea').style.display = 'flex';
+                        document.getElementById('gameArea').style.display = 'none';
+                    } else {
+                        document.getElementById('adminArea').style.display = 'none';
+                        document.getElementById('gameArea').style.display = 'flex';
+                    }
+                    updateAdminControls();
+                    updateChatState();
+                });
+            }
+    
+            function updateAdminControls() {
+                const startControls = document.getElementById('startGameControls');
+                const endGameBtn = document.getElementById('endGameBtn');
+    
+                if (!isAdmin) return;
+    
+                if (gameStarted && !gameEnded) {
+                    startControls.style.display = 'none';
+                    endGameBtn.style.display = 'inline-block';
+                } else {
+                    startControls.style.display = 'block';
+                    endGameBtn.style.display = 'none';
+                }
+            }
+    
+            function updateChatState() {
+                const chatInput = isAdmin ? 
+                    document.querySelector('#adminArea #chatInput') : 
+                    document.querySelector('#gameArea #chatInput');
+                const sendBtn = isAdmin ? 
+                    document.querySelector('#adminArea #sendBtn') : 
+                    document.querySelector('#gameArea #sendBtn');
+    
+                chatInput.disabled = !gameActive;
+                sendBtn.disabled = !gameActive;
+            }
+    
+            function startGame() {
+                const wordInput = document.getElementById("wordInput").value.trim();
+                if (!wordInput) {
+                    alert("Введіть слово для гри!");
+                    return;
+                }
+    
+                socket.emit("startGame", wordInput);
+            }
+    
+            function sendMessage() {
+                if (!gameActive) return;
+                const chatInput = isAdmin ? 
+                    document.querySelector('#adminArea #chatInput') : 
+                    document.querySelector('#gameArea #chatInput');
+                const message = chatInput.value;
+                if (message.trim() !== '') {
+                    socket.emit('chatMessage', { message, nickname });
+                    chatInput.value = '';
+                }
+            }
+    
+            socket.on('chatMessage', function(data) {
+                const chatDiv = isAdmin ? 
+                    document.querySelector('#adminArea #chat') : 
+                    document.querySelector('#gameArea #chat');
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+                if (data.correct) {
+                    messageDiv.classList.add('correct');
+                    messageDiv.innerHTML = `${data.nickname} відгадав: <span class="player">${data.message}</span>`;
+                } else {
+                    messageDiv.innerHTML = `<span class="player">${data.nickname}:</span> ${data.message}`;
+                }
+                chatDiv.appendChild(messageDiv);
+                chatDiv.scrollTop = chatDiv.scrollHeight;
+            });
+    
+            socket.on('gameStatus', function(data) {
+                gameStarted = data.gameStarted;
+                gameEnded = data.gameEnded;
+                gameActive = gameStarted && !gameEnded;
+    
+                updateChatState();
+                if (isAdmin) updateAdminControls();
+            });
+    
+            function showCountdownAndStartGame() {
+                let countdown = 3;
+                const modal = document.getElementById('gameMessageModal');
+                const messageText = document.getElementById('gameMessageText');
+                
+                modal.classList.add('active');
+                messageText.innerHTML = `<div class="countdown">${countdown}</div>`;
+                
+                const interval = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        messageText.innerHTML = `<div class="countdown">${countdown}</div>`;
+                    } else {
+                        clearInterval(interval);
+                        messageText.innerHTML = 'ПОЧАЛИ!';
+                        setTimeout(() => modal.classList.remove('active'), 1000);
+                    }
+                }, 1000);
+            }
+    
+            socket.on('gameStarted', function() {
+                showCountdownAndStartGame();
+            });
+    
+            socket.on('gameEnded', function(data) {
+                showGameMessage(`🎉🎉 МОЛОДЕЦЬ! 🎉🎉<br><br>🥳 ${data.winner} відгадав слово <strong>${data.word}</strong> 🥳`);
+            });
+    
+            function endGame() {
+                if (!isAdmin) return;
+                socket.emit('forceEndGame');
+            }
+    
+            function showGameMessage(message) {
+                const modal = document.getElementById('gameMessageModal');
+                const messageText = document.getElementById('gameMessageText');
+                messageText.innerHTML = message;
+                modal.classList.add('active');
+    
+                setTimeout(() => {
+                    modal.classList.remove('active');
+                }, 3000);
+            }
+    
+            document.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            });
 
-    socket.on('gameStarted', function() {
-        showCountdownAndStartGame();
-    });
+            const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+            let isDayMode = false;
 
-    socket.on('gameEnded', function(data) {
-        gameEnded = true;
-        gameActive = false;
-        document.getElementById('chatInput').disabled = true;
-        document.getElementById('sendBtn').disabled = true;
-        showGameMessage(`🎉🎉 МОЛОДЕЦЬ! 🎉🎉<br><br>🥳 ${data.winner} відгадав слово <strong>${data.word}</strong> 🥳`);
-    });
-
-    function showGameMessage(message) {
-        const modal = document.getElementById('gameMessageModal');
-        const messageText = document.getElementById('gameMessageText');
-        messageText.innerHTML = message;
-        modal.classList.add('active');
-
-        setTimeout(() => {
-            modal.classList.remove('active');
-        }, 5000);
-    }
-
-    document.getElementById('chatInput').addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            sendMessage();
-        }
-    });
-</script>
-
-</body>
+            toggleThemeBtn.addEventListener('click', () => {
+                isDayMode = !isDayMode;
+                document.body.classList.toggle('day-mode', isDayMode);
+                toggleThemeBtn.innerHTML = isDayMode ? 
+                    '<i class="fas fa-sun"></i>' : 
+                    '<i class="fas fa-moon"></i>';
+            });
+        </script>
+    </body>
 </html>
