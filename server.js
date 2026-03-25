@@ -5,6 +5,11 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log("Server running");
+});
+
 let activePlayers = [];
 let gameStarted = false;
 let word = "";
