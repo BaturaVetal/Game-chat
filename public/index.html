@@ -30,8 +30,9 @@
                 background-color: var(--background);
                 margin: 0; 
                 padding: 0; 
-                height: 100vh; 
-                overflow: hidden; 
+                min-height: 100vh;
+                overflow-x: hidden;
+                overflow-y: auto;
                 color: var(--text);
                 display: flex; 
                 flex-direction: column; 
@@ -52,7 +53,8 @@
 
             #chat { 
                 height: 70vh; 
-                width: 90vw; 
+                width: 100%; 
+                max-width: 600px;
                 overflow-y: auto; 
                 background: var(--chat-bg);
                 border-radius: 12px; 
@@ -243,7 +245,8 @@
                 flex-direction: column;
                 align-items: center;
                 gap: 10px;
-                width: 300px; 
+                width: 90vw; 
+                max-width: 300px;
                 position: absolute; 
                 left: 50%;
                 transform: translateX(-50%); 
@@ -259,7 +262,8 @@
             }
 
             #gameArea #chatInput, #gameArea #sendBtn {
-                width: 90vw; 
+                width: 100%; 
+                max-width: 600px;
             }
 
             /* Оновлена панель інструментів */
@@ -331,6 +335,23 @@
                 display: flex;
                 flex-direction: column;
                 gap: 10px;
+            }
+
+            @media (max-width: 700px) {
+
+                #chat {
+                    height: 60vh;
+                    padding: 15px;
+                }
+            
+                #chatInput {
+                    font-size: 16px;
+                }
+            
+                #sendBtn {
+                    font-size: 16px;
+                }
+            
             }
         </style>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
