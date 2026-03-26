@@ -771,36 +771,47 @@
             });
     
             canvas.addEventListener('mouseup', (e) => {
+                // Якщо нічого не малювали - перериваємо
+                if (!drawing && !currentShape) return; 
+                
                 drawing = false;
                 const rect = canvas.getBoundingClientRect();
                 const scaleX = canvas.width / rect.width;
                 const scaleY = canvas.height / rect.height;
                 const offsetX = (e.clientX - rect.left) * scaleX;
                 const offsetY = (e.clientY - rect.top) * scaleY;
-
-                if (!drawing && !currentShape) return;
-    
+        
                 if (currentShape) {
+                    // Малюємо фігуру
                     drawShape(ctx, startX, startY, offsetX, offsetY);
                     tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    
+                    // Скидаємо фігуру (повертаємось до ручки)
                     currentShape = null;
                     clearShapeSelection();
                 } else {
+                    // Закриваємо лінію ручки
                     ctx.closePath();
                 }
                 
-                saveState();
+                // ГАРАНТОВАНЕ ЗБЕРЕЖЕННЯ (поза всіма if/else)
+                saveState(); 
             });
     
-            canvas.addEventListener('mouseout', () => {
-                if (drawing) { // Зберігаємо стан тільки якщо ми дійсно щось малювали
+            anvas.addEventListener('mouseout', () => {
+                // Якщо курсор вилетів за екран під час малювання
+                if (drawing) {
                     drawing = false;
                     if (currentShape) {
                         tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                        currentShape = null;
+                        clearShapeSelection();
                     } else {
                         ctx.closePath();
                     }
-                    saveState(); // ДОДАЙ ЦЕЙ РЯДОК
+                    
+                    // ГАРАНТОВАНЕ ЗБЕРЕЖЕННЯ
+                    saveState(); 
                 }
             });
     
