@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
         <title>de.teens chat</title>
         <style>
             :root {
@@ -30,7 +30,7 @@
                 background-color: var(--background);
                 margin: 0; 
                 padding: 0; 
-                height: 100vh; 
+                height: 100dvh; 
                 overflow: hidden; 
                 color: var(--text);
                 display: flex; 
@@ -51,15 +51,17 @@
             }
 
             #chat { 
-                height: 70vh; 
-                width: 90vw; 
+                flex: 1;
+                height: auto; 
+                width: 90%; 
                 overflow-y: auto; 
                 background: var(--chat-bg);
                 border-radius: 12px; 
-                padding: 20px; 
+                padding: 15px; 
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
                 margin-bottom: 10px;
                 border: 1px solid rgba(255, 255, 255, 0.1);
+                box-sizing: border-box;
             }
 
             .message { 
@@ -123,6 +125,7 @@
                 margin-bottom: 10px; 
                 box-sizing: border-box;
                 transition: border-color 0.3s ease;
+                font-size: 16px;
             }
 
             #nickname:focus, #chatInput:focus, #wordInput:focus {
@@ -251,15 +254,18 @@
 
             #gameArea {
                 display: none; 
-                width: 100vw;
-                height: calc(100vh - 40px);
-                margin-top: 40px;
+                width: 100%;
+                height: 100%;
+                margin-top: 50px;
+                padding-bottom: 15px;
+                box-sizing: border-box;
                 flex-direction: column;
                 align-items: center;
             }
 
             #gameArea #chatInput, #gameArea #sendBtn {
-                width: 90vw; 
+                width: 90%; 
+                flex-shrink: 0;
             }
 
             /* Оновлена панель інструментів */
