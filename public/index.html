@@ -35,9 +35,6 @@
                 width: 100%;
                 height: 100%;
                 overflow: hidden; 
-                position: fixed;
-                top: 0;
-                left: 0;
                 touch-action: none;
             }
 
@@ -744,19 +741,25 @@
                 socket.emit('reconnect');
             });
 
-            // Код для динамічного підлаштування висоти під клавіатуру
+            // Оновлений код для динамічного підлаштування висоти
             if (window.visualViewport) {
                 const adjustHeight = () => {
-                    // Встановлюємо висоту body рівно такій, яка зараз видима на екрані
+                    // Задаємо висоту body рівно під видиму частину екрана
                     document.body.style.height = `${window.visualViewport.height}px`;
                     
-                    // Скролимо чат в самий низ при відкритті клавіатури, щоб бачити останні слова
+                    // Б'ємо Safari по руках, щоб не сунув сторінку вгору
+                    window.scrollTo(0, 0);
+                    
+                    // Скролимо чат в самий низ
                     const gameChat = document.querySelector('#gameArea #chat');
                     if (gameChat) gameChat.scrollTop = gameChat.scrollHeight;
                 };
             
+                // Слухаємо і зміну розміру, і скрол (спеціально для iOS)
                 window.visualViewport.addEventListener('resize', adjustHeight);
-                // Викликаємо функцію одразу при старті
+                window.visualViewport.addEventListener('scroll', adjustHeight);
+                
+                // Викликаємо одразу при старті
                 adjustHeight();
             }
     
