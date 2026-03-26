@@ -15,6 +15,10 @@
                 --tool-active: #ff9800;
             }
 
+            * {
+                box-sizing: border-box;
+            }
+
             body.day-mode {
                 --background: #ffffff;
                 --text: #333333;
@@ -44,24 +48,22 @@
                 background: var(--chat-bg);
                 text-align: center; 
                 width: 100%; 
-                position: absolute; 
-                top: 0; 
+                position: relative; 
                 z-index: 20; 
                 box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                flex-shrink: 0;
             }
 
             #chat { 
                 flex: 1;
-                height: auto; 
-                width: 90%; 
+                width: 100%; 
+                min-height: 0;
                 overflow-y: auto; 
                 background: var(--chat-bg);
                 border-radius: 12px; 
                 padding: 15px; 
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-                margin-bottom: 10px;
                 border: 1px solid rgba(255, 255, 255, 0.1);
-                box-sizing: border-box;
             }
 
             .message { 
@@ -200,11 +202,11 @@
             }
 
             #adminArea {
-                width: 100vw;
-                height: calc(100vh - 40px); 
+                width: 100%;
+                flex: 1;
                 display: flex;
                 flex-direction: row;
-                margin-top: 40px; 
+                overflow: hidden;
             }
 
             #chatPanel {
@@ -255,17 +257,19 @@
             #gameArea {
                 display: none; 
                 width: 100%;
-                height: 100%;
-                margin-top: 50px;
-                padding-bottom: 15px;
+                flex: 1;
+                overflow: hidden;
+                padding: 10px 15px 15px 15px;
+                gap: 10px;
                 box-sizing: border-box;
                 flex-direction: column;
                 align-items: center;
             }
 
             #gameArea #chatInput, #gameArea #sendBtn {
-                width: 90%; 
+                width: 100%; 
                 flex-shrink: 0;
+                margin: 0;
             }
 
             /* Оновлена панель інструментів */
