@@ -405,6 +405,37 @@
                 gap: 10px;
             }
 
+            #quickPalette {
+                display: flex;
+                flex-wrap: wrap; /* Дозволяє квадратикам переноситись на новий рядок */
+                gap: 8px; /* Відступи між квадратиками */
+                padding: 10px;
+                background: rgba(0,0,0,0.2);
+                border-radius: 8px;
+                justify-content: center; /* Центруємо палітру всередині інструментів */
+            }
+
+            .color-swatch {
+                width: 28px; /* Розмір квадратика */
+                height: 28px;
+                border-radius: 6px; /* Трохи заокруглені кути */
+                cursor: pointer;
+                border: 2px solid transparent; /* Заготовка під рамку вибору */
+                transition: transform 0.1s ease, border-color 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            }
+
+            /* Ефект при наведенні */
+            .color-swatch:hover {
+                transform: scale(1.1); /* Трохи збільшуємо */
+            }
+
+            /* Ефект коли колір ВИБРАНИЙ (активний) */
+            .color-swatch.active {
+                border-color: #ffffff; /* Біла жирна рамка */
+                box-shadow: 0 0 8px rgba(255,255,255,0.8); /* Світіння */
+            }
+
             /* АДАПТАЦІЯ ДЛЯ ТЕЛЕФОНІВ */
             @media (max-width: 768px) {
                 #adminArea {
@@ -465,43 +496,50 @@
                 </div>
     
                 <div class="tools-container">
+                    <div class="tool-item" id="undoBtn">
+                        <i class="fas fa-undo"></i>
+                        <span>Назад</span>
+                    </div>
+        
+                    <div class="tool-item" id="clearCanvasBtn">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Очистити</span>
+                    </div>
+                    
                     <div class="tool-item" id="lineWidthTool">
                         <i class="fas fa-pencil-alt"></i>
                         <input id="lineWidthSlider" type="range" min="1" max="50" value="4" />
                     </div>
-    
-                    <div class="tool-item" id="colorTool">
+                    
+                    <div class="tool-item" id="colorPickerTool">
                         <i class="fas fa-palette"></i>
-                        <input id="colorPicker" type="color" value="#121212" />
+                        <input id="colorPicker" type="color" min="1" max="50" value="4" />
                     </div>
-    
-                    <div class="tool-item" id="eraserBtn">
-                        <i class="fas fa-eraser"></i>
-                        <span>Ластик</span>
-                    </div>
-    
+        
+                    <div class="tool-item" id="quickPalette">
+                        <div class="color-swatch active" style="background-color: #000000;" data-color="#000000"></div> <div class="color-swatch" style="background-color: #ffffff; border: 1px solid #ccc;" data-color="#ffffff"></div> <div class="color-swatch" style="background-color: #ff0000;" data-color="#ff0000"></div> <div class="color-swatch" style="background-color: #ff9800;" data-color="#ff9800"></div> <div class="color-swatch" style="background-color: #ffeb3b;" data-color="#ffeb3b"></div> <div class="color-swatch" style="background-color: #4caf50;" data-color="#4caf50"></div> <div class="color-swatch" style="background-color: #2196f3;" data-color="#2196f3"></div> <div class="color-swatch" style="background-color: #9c27b0;" data-color="#9c27b0"></div> </div>
+        
                     <div class="tool-item" id="fillBtn">
                         <i class="fas fa-fill-drip"></i>
                         <span>Заливка</span>
                     </div>
-    
-                    <div class="tool-item" id="clearCanvasBtn">
-                        <i class="fas fa-trash"></i>
-                        <span>Очистити</span>
+                    <div class="tool-item" id="eraserBtn">
+                        <i class="fas fa-eraser"></i>
+                        <span>Ластик</span>
                     </div>
-    
+                    
                     <div class="tool-item" id="triangleBtn">
-                        <i class="fas fa-play" style="transform: rotate(90deg);"></i>
+                        <i class="fas fa-play"></i>
                         <span>Трикутник</span>
                     </div>
-    
+        
                     <div class="tool-item" id="rectangleBtn">
-                        <i class="fas fa-rectangle-landscape"></i>
+                        <i class="fas fa-square"></i>
                         <span>Прямокутник</span>
                     </div>
-    
+        
                     <div class="tool-item" id="ellipseBtn">
-                        <i class="fas fa-circle-notch"></i>
+                        <i class="fas fa-circle"></i>
                         <span>Овал</span>
                     </div>
     
@@ -565,6 +603,7 @@
             ctx.lineJoin = 'round';
             ctx.fillStyle = canvasBackgroundColor;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+            saveState();
     
             tempCtx.lineWidth = lineWidth;
             tempCtx.lineCap = 'round';
@@ -578,6 +617,18 @@
             const triangleBtn = document.getElementById('triangleBtn');
             const rectangleBtn = document.getElementById('rectangleBtn');
             const ellipseBtn = document.getElementById('ellipseBtn');
+
+            const undoBtn = document.getElementById('undoBtn');
+            let undoStack = []; // Тут будуть зберігатись "фото" полотна
+            const maxUndoSteps = 20; // Максимальна кількість кроків назад (щоб не забити пам'ять браузера)
+            
+            // Функція, яка робить "фото" полотна і зберігає його
+            function saveState() {
+                undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+                if (undoStack.length > maxUndoSteps) {
+                    undoStack.shift(); // Видаляємо найстаріше фото, якщо їх більше 20
+                }
+            }
     
             const shapeButtons = [triangleBtn, rectangleBtn, ellipseBtn];
     
@@ -593,6 +644,29 @@
                     ctx.strokeStyle = currentColor;
                     tempCtx.strokeStyle = currentColor;
                 }
+
+                swatches.forEach(s => s.classList.remove('active'));
+            });
+
+            // Логіка Швидкої Палітри
+        const swatches = document.querySelectorAll('.color-swatch');
+
+            swatches.forEach(swatch => {
+                swatch.addEventListener('click', () => {
+                    // 1. Отримуємо колір з data-атрибута квадратика
+                    const newColor = swatch.dataset.color;
+                    
+                    // 2. Оновлюємо глобальний колір малювання
+                    currentColor = newColor;
+                    
+                    // 3. Оновлюємо значення основного colorPicker (щоб вони синхронізувались)
+                    colorPicker.value = newColor; // ЦЕЙ РЯДОК МОЖЕ ВИКЛИКАТИ ПОМИЛКУ, якщо твій colorPicker все ще range, а не color input. 
+                    // Якщо colorPicker type="range", просто видали цей рядок. Якщо type="color", залиш.
+    
+                    // 4. Візуально оновлюємо активний квадратик
+                    swatches.forEach(s => s.classList.remove('active')); // Прибираємо виділення з усіх
+                    swatch.classList.add('active'); // Додаємо виділення натиснутому
+                });
             });
     
             eraserBtn.addEventListener('click', () => {
@@ -609,6 +683,14 @@
                     eraserBtn.classList.remove('active');
                 }
             });
+
+            undoBtn.addEventListener('click', () => {
+                if (undoStack.length > 1) { // Якщо є куди вертатись (не тільки чистий листок)
+                    undoStack.pop(); // Видаляємо поточний стан (бо він з помилкою)
+                    const previousState = undoStack[undoStack.length - 1]; // Беремо попередній
+                    ctx.putImageData(previousState, 0, 0); // Малюємо його на полотні
+                }
+            });
     
             fillBtn.addEventListener('click', () => {
                 filling = !filling;
@@ -620,6 +702,8 @@
             clearCanvasBtn.addEventListener('click', () => {
                 ctx.fillStyle = canvasBackgroundColor;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                saveState();
             });
     
             triangleBtn.addEventListener('click', () => selectShape('triangle'));
@@ -689,6 +773,8 @@
                 const scaleY = canvas.height / rect.height;
                 const offsetX = (e.clientX - rect.left) * scaleX;
                 const offsetY = (e.clientY - rect.top) * scaleY;
+
+                if (!drawing && !currentShape) return;
     
                 if (currentShape) {
                     drawShape(ctx, startX, startY, offsetX, offsetY);
@@ -698,14 +784,19 @@
                 } else {
                     ctx.closePath();
                 }
+                
+                saveState();
             });
     
             canvas.addEventListener('mouseout', () => {
-                drawing = false;
-                if (currentShape) {
-                    tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
-                } else {
-                    ctx.closePath();
+                if (drawing) { // Зберігаємо стан тільки якщо ми дійсно щось малювали
+                    drawing = false;
+                    if (currentShape) {
+                        tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+                    } else {
+                        ctx.closePath();
+                    }
+                    saveState(); // ДОДАЙ ЦЕЙ РЯДОК
                 }
             });
     
@@ -778,6 +869,8 @@
                 }
     
                 ctx.putImageData(imageData, 0, 0);
+
+                saveState();
             }
     
             function colorsMatch(color1, color2) {
