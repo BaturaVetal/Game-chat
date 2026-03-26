@@ -164,7 +164,7 @@
 
             .modal {
                 display: none;
-                position: fixed;
+                position: absolute;
                 z-index: 1000;
                 top: 0; 
                 left: 0; 
@@ -172,11 +172,11 @@
                 height: 100%;
                 background-color: rgba(0, 0, 0, 0.8);
                 justify-content: center;
-                align-items: center;
+                align-items: flex-start;
+                padding-top: 15vh;
                 color: white;
                 font-size: 24px;
                 text-align: center;
-                padding: 20px;
                 opacity: 0;
                 transition: opacity 0.3s ease;
             }
@@ -190,7 +190,8 @@
                 background-color: var(--message-bg);
                 padding: 20px;
                 border-radius: 12px;
-                max-width: 80%;
+                width: 90%;
+                max-width: 400px;
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
             }
 
