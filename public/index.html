@@ -490,16 +490,6 @@
                         <span>Очистити</span>
                     </div>
     
-                    <div class="tool-item" id="circleBtn">
-                        <i class="fas fa-circle"></i>
-                        <span>Коло</span>
-                    </div>
-    
-                    <div class="tool-item" id="squareBtn">
-                        <i class="fas fa-square"></i>
-                        <span>Квадрат</span>
-                    </div>
-    
                     <div class="tool-item" id="triangleBtn">
                         <i class="fas fa-play" style="transform: rotate(90deg);"></i>
                         <span>Трикутник</span>
@@ -585,13 +575,11 @@
             const eraserBtn = document.getElementById('eraserBtn');
             const fillBtn = document.getElementById('fillBtn');
             const clearCanvasBtn = document.getElementById('clearCanvasBtn');
-            const circleBtn = document.getElementById('circleBtn');
-            const squareBtn = document.getElementById('squareBtn');
             const triangleBtn = document.getElementById('triangleBtn');
             const rectangleBtn = document.getElementById('rectangleBtn');
             const ellipseBtn = document.getElementById('ellipseBtn');
     
-            const shapeButtons = [circleBtn, squareBtn, triangleBtn, rectangleBtn, ellipseBtn];
+            const shapeButtons = [triangleBtn, rectangleBtn, ellipseBtn];
     
             lineWidthSlider.addEventListener('input', () => {
                 lineWidth = parseInt(lineWidthSlider.value);
@@ -634,8 +622,6 @@
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             });
     
-            circleBtn.addEventListener('click', () => selectShape('circle'));
-            squareBtn.addEventListener('click', () => selectShape('square'));
             triangleBtn.addEventListener('click', () => selectShape('triangle'));
             rectangleBtn.addEventListener('click', () => selectShape('rectangle'));
             ellipseBtn.addEventListener('click', () => selectShape('ellipse'));
@@ -729,14 +715,6 @@
                 context.beginPath();
     
                 switch (currentShape) {
-                    case 'circle':
-                        const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-                        context.arc(x1, y1, radius, 0, 2 * Math.PI);
-                        break;
-                    case 'square':
-                        const side = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
-                        context.rect(x1, y1, side, side);
-                        break;
                     case 'triangle':
                         context.moveTo(x1, y1);
                         context.lineTo(x2, y2);
