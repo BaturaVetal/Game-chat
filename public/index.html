@@ -649,7 +649,7 @@
             });
 
             // Логіка Швидкої Палітри
-        const swatches = document.querySelectorAll('.color-swatch');
+            const swatches = document.querySelectorAll('.color-swatch');
 
             swatches.forEach(swatch => {
                 swatch.addEventListener('click', () => {
@@ -659,9 +659,13 @@
                     // 2. Оновлюємо глобальний колір малювання
                     currentColor = newColor;
                     
-                    // 3. Оновлюємо значення основного colorPicker (щоб вони синхронізувались)
-                    colorPicker.value = newColor; // ЦЕЙ РЯДОК МОЖЕ ВИКЛИКАТИ ПОМИЛКУ, якщо твій colorPicker все ще range, а не color input. 
-                    // Якщо colorPicker type="range", просто видали цей рядок. Якщо type="color", залиш.
+                    if (!erasing) {
+                        ctx.strokeStyle = currentColor;
+                        tempCtx.strokeStyle = currentColor;
+                    }
+    
+                    // Оновлюємо основний повзунок кольору, щоб він співпадав
+                    document.getElementById('colorPicker').value = newColor;
     
                     // 4. Візуально оновлюємо активний квадратик
                     swatches.forEach(s => s.classList.remove('active')); // Прибираємо виділення з усіх
