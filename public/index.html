@@ -29,13 +29,21 @@
                 --tool-active: #fb8c00;
             }
 
-            body { 
-                font-family: 'Arial', sans-serif; 
-                background-color: var(--background);
+            html, body { 
                 margin: 0; 
                 padding: 0; 
-                height: 100dvh; 
+                width: 100%;
+                height: 100%;
                 overflow: hidden; 
+                position: fixed;
+                top: 0;
+                left: 0;
+                touch-action: none;
+            }
+
+            body {
+                font-family: 'Arial', sans-serif; 
+                background-color: var(--background);
                 color: var(--text);
                 display: flex; 
                 flex-direction: column; 
@@ -735,6 +743,22 @@
                 console.log('Connected to the server');
                 socket.emit('reconnect');
             });
+
+            // Код для динамічного підлаштування висоти під клавіатуру
+            if (window.visualViewport) {
+                const adjustHeight = () => {
+                    // Встановлюємо висоту body рівно такій, яка зараз видима на екрані
+                    document.body.style.height = `${window.visualViewport.height}px`;
+                    
+                    // Скролимо чат в самий низ при відкритті клавіатури, щоб бачити останні слова
+                    const gameChat = document.querySelector('#gameArea #chat');
+                    if (gameChat) gameChat.scrollTop = gameChat.scrollHeight;
+                };
+            
+                window.visualViewport.addEventListener('resize', adjustHeight);
+                // Викликаємо функцію одразу при старті
+                adjustHeight();
+            }
     
             function startChat() {
                 nickname = document.getElementById('nickname').value.trim();
