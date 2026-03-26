@@ -279,8 +279,6 @@
             .canvas-container {
                 width: 100%;
                 height: 100%;
-                max-width: 800px;
-                max-height: 600px;
                 aspect-ratio: 4 / 3;
                 position: relative;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.5);
@@ -457,7 +455,7 @@
             <div id="canvasPanel">
                 <button id="endGameBtn" onclick="endGame()">Завершити гру</button>
     
-                <<div class="canvas-wrapper">
+                <div class="canvas-wrapper">
                     <div class="canvas-container">
                         <canvas id="drawCanvas" width="800" height="600"></canvas>
                         <canvas id="tempCanvas" width="800" height="600"></canvas>
@@ -658,15 +656,15 @@
     
             canvas.addEventListener('mousedown', (e) => {
                 const rect = canvas.getBoundingClientRect();
-                const offsetX = e.clientX - rect.left;
-                const offsetY = e.clientY - rect.top;
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const offsetX = (e.clientX - rect.left) * scaleX;
+                const offsetY = (e.clientY - rect.top) * scaleY;
                 startX = offsetX;
                 startY = offsetY;
     
                 if (filling) {
                     floodFill(startX, startY, hexToRgb(currentColor));
-                    filling = false;
-                    fillBtn.classList.remove('active');
                     return;
                 }
     
@@ -681,8 +679,10 @@
                 if (!drawing) return;
     
                 const rect = canvas.getBoundingClientRect();
-                const offsetX = e.clientX - rect.left;
-                const offsetY = e.clientY - rect.top;
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const offsetX = (e.clientX - rect.left) * scaleX;
+                const offsetY = (e.clientY - rect.top) * scaleY;
     
                 if (currentShape) {
                     tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
@@ -697,8 +697,10 @@
             canvas.addEventListener('mouseup', (e) => {
                 drawing = false;
                 const rect = canvas.getBoundingClientRect();
-                const offsetX = e.clientX - rect.left;
-                const offsetY = e.clientY - rect.top;
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const offsetX = (e.clientX - rect.left) * scaleX;
+                const offsetY = (e.clientY - rect.top) * scaleY;
     
                 if (currentShape) {
                     drawShape(ctx, startX, startY, offsetX, offsetY);
