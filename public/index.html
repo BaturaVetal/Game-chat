@@ -527,6 +527,11 @@
                         <i class="fas fa-eraser"></i>
                         <span>Ластик</span>
                     </div>
+
+                    <div class="tool-item" id="lineBtn">
+                        <i class="fas fa-minus"></i>
+                        <span>Лінія</span>
+                    </div>
                     
                     <div class="tool-item" id="triangleBtn">
                         <i class="fas fa-play"></i>
@@ -626,11 +631,12 @@
             const eraserBtn = document.getElementById('eraserBtn');
             const fillBtn = document.getElementById('fillBtn');
             const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+            const lineBtn = document.getElementById('lineBtn');
             const triangleBtn = document.getElementById('triangleBtn');
             const rectangleBtn = document.getElementById('rectangleBtn');
             const ellipseBtn = document.getElementById('ellipseBtn');
     
-            const shapeButtons = [triangleBtn, rectangleBtn, ellipseBtn];
+            const shapeButtons = [triangleBtn, rectangleBtn, ellipseBtn, lineBtn];
     
             lineWidthSlider.addEventListener('input', () => {
                 lineWidth = parseInt(lineWidthSlider.value);
@@ -709,7 +715,8 @@
 
                 saveState();
             });
-    
+
+            lineBtn.addEventListener('click', () => selectShape('line'));
             triangleBtn.addEventListener('click', () => selectShape('triangle'));
             rectangleBtn.addEventListener('click', () => selectShape('rectangle'));
             ellipseBtn.addEventListener('click', () => selectShape('ellipse'));
@@ -786,9 +793,11 @@
                     drawShape(ctx, startX, startY, offsetX, offsetY);
                     tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
                     
-                    // Скидаємо фігуру (повертаємось до ручки)
-                    currentShape = null;
-                    clearShapeSelection();
+                    // Скидаємо фігуру на ручку, АЛЕ ТІЛЬКИ ЯКЩО ЦЕ НЕ ЛІНІЯ
+                    if (currentShape !== 'line') {
+                        currentShape = null;
+                        clearShapeSelection();
+                    }
                 } else {
                     // Закриваємо лінію ручки
                     ctx.closePath();
@@ -821,6 +830,10 @@
                 context.beginPath();
     
                 switch (currentShape) {
+                    case 'line':
+                        context.moveTo(x1, y1);
+                        context.lineTo(x2, y2);
+                        break;
                     case 'triangle':
                         context.moveTo(x1, y1);
                         context.lineTo(x2, y2);
